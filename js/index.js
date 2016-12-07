@@ -41,7 +41,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 					return;
 				}
 				console.log("dodelal jsem uspesne parsovani, muzu delat find");
-				findObject('http://mre.zcu.cz/id/4470a2819a640aa16dee17defa068383e062fa24"', null, null);	
+				findObject('http://mre.zcu.cz/id/4470a2819a640aa16dee17defa068383e062fa24', null, null);	
 				//findObject('\'http://mre.zcu.cz/id/8508e58d9d99fdd2b978fe6c22a264cfae737b3d\'', null, null);	
 			
 			}

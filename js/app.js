@@ -12,7 +12,7 @@ function parseAndStore(rdfText, cb) {
 	}
 	if (triple) {
 		console.log('Saving triple: ' + triple.subject, triple.predicate, triple.object, '.');
-		console.log('Status: ' + store.addTriple('\'\"' + triple.subject + '\'', '\'' + triple.predicate + '\'', '\'' + triple.object + '\''));
+		console.log('Status: ' + store.addTriple(triple.subject, triple.predicate, triple.object));
 		//  console.log (store.size);
     } else { console.log("All triples in store!", prefixes); cb();}
   });  
