@@ -15,18 +15,15 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 		}else{
 			reader.onload = (e) => {
 				var contents = e.target.result;
-				alert( "Got the file.n"
+				/*alert( "Got the file.n"
 					+"name: " + rdfFile.name + "n"
 					+"type: " + rdfFile.type + "n"
 					+"size: " + rdfFile.size + " bytesn"
 					+ "starts with: " + contents.substr(1, contents.indexOf("n"))
-				);
+				);*/
 			}
 			reader.readAsText(rdfFile);
 		}
-		/*var rader = new FileReader();
-		var parser = N3.Parser(), rdfStream = fs.(rdfFile);
-		parser.parse(rdfStream, console.log);*/
 	}
 	var rdfText = "";
 	reader.onloadend = (event) => {
@@ -37,8 +34,18 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 		} else {
 			//console.log("Contents: " + rdfText);
 			//do next stuff
-			parseAndStore(rdfText);
-			findObject('http://mre.zcu.cz/id/8508e58d9d99fdd2b978fe6c22a264cfae737b3d', null, null);
+			var parser = N3.Parser();
+			parseDone = (error) => {
+				if (error){
+					console.log("priparsovani se neco posralo, musim zareagovat");
+					return;
+				}
+				console.log("dodelal jsem uspesne parsovani, muzu delat find");
+				findObject('http://mre.zcu.cz/id/4470a2819a640aa16dee17defa068383e062fa24"', null, null);	
+				//findObject('\'http://mre.zcu.cz/id/8508e58d9d99fdd2b978fe6c22a264cfae737b3d\'', null, null);	
+			
+			}
+			parseAndStore(rdfText, parseDone);
 		}
 	}
 } else {
