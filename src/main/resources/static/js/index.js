@@ -17,10 +17,27 @@ stopLoader = () =>{
 }
 //stop initial loader	
 stopLoader();	
-	
-	// Check for the various File API support.
+var processFiles = (event) =>{
+                var rdfFile = $("#rdf-file")[0].files[0];
+		var owlFile = $("#owl-file")[0].files[0];
+		console.log($("#owl-file")[0].files[0]);
+		if (!rdfFile) {
+			alert("Failed to load RDF file");
+			return false;
+		}
+		if (!owlFile) {
+			alert("Failed to load OWL file");
+                        event.preventDefault();
+                        return false;
+		}
+		//rdfReader.readAsText(rdfFile);
+		//owlReader.readAsText(owlFile);
+		//starting loader for parsing
+		startLoader(1);
+}
+/*
+// Check for the various File API support.
 if (window.File && window.FileReader && window.FileList && window.Blob) {
-	//do your stuff!
 	var rdfReader = new FileReader();
 	var owlReader = new FileReader();
 	//handle fileupload
@@ -57,7 +74,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 		} else {
 			//console.log("Contents: " + rdfText);
 			//do next stuff
-			//var parser = N3.Parser();
+			var parser = N3.Parser();
 			parseDone = (error) => {
 				//stopping loader from rdf
 				stopLoader();
@@ -83,7 +100,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 		} else {
 			//console.log("Contents: " + rdfText);
 			//do next stuff
-			//var parser = N3.Parser();
+			var parser = N3.Parser();
 				//stopping loader from owl
 				stopLoader();
 			//TODO	
@@ -99,7 +116,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 			}
 			parseAndStore(rdfText, parseDone);
 			*/
-		}
+	/*	}
 	}
 	
 	//process query to find node
@@ -114,3 +131,4 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 } else {
 	alert('The File APIs are not fully supported by your browser.');
 }
+*/

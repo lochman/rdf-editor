@@ -18,7 +18,7 @@
 		<div class="container" style="position:relative">
 			<div id="files-page">
 			<h1>To proceed select RDF and OWF file to edit.</h1>
-			<form id="form-files" action="action" onSubmit="processFiles(event)" method="post" enctype="multipart/form-data">
+			<form id="form-files"  th:action="@{/file/load}" onSubmit="processFiles(event)" method="post" enctype="multipart/form-data">
 				<div class="fileupload fileupload-new" data-provides="fileupload">
 					<span class="btn btn-primary btn-file btn-index"><span class="fileupload-new">Select RDF file</span>
 						<span class="fileupload-exists">Change</span>         <input id= "rdf-file" name="rdf" type="file" /></span>
