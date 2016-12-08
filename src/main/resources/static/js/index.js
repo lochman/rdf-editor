@@ -57,7 +57,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 		} else {
 			//console.log("Contents: " + rdfText);
 			//do next stuff
-			var parser = N3.Parser();
+			//var parser = N3.Parser();
 			parseDone = (error) => {
 				//stopping loader from rdf
 				stopLoader();
@@ -83,7 +83,7 @@ if (window.File && window.FileReader && window.FileList && window.Blob) {
 		} else {
 			//console.log("Contents: " + rdfText);
 			//do next stuff
-			var parser = N3.Parser();
+			//var parser = N3.Parser();
 				//stopping loader from owl
 				stopLoader();
 			//TODO	
