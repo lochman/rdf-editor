@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.*;
 
 /**
  * Created by Matej Lochman on 8.12.16.
@@ -18,9 +19,8 @@ import java.io.InputStream;
 @Service
 public class RdfService {
 
-    public void fileToModel(Model model, MultipartFile file) throws IOException {
-        model.read(new ByteArrayInputStream(file.getBytes()), null);
-        //model.setNsPrefix("ds", DS.NS);
+    public void fileToModel(Model model, MultipartFile file, String language) throws IOException {
+        model.read(new ByteArrayInputStream(file.getBytes()), null, language);
     }
 
     public Model createRdfModel(InputStream stream) {
@@ -35,19 +35,24 @@ public class RdfService {
         return ontologyModel;
     }
 
-    public void query(Model model, String queryString) {
-        try (QueryExecution qexec = QueryExecutionFactory.create(queryString, model)) {
+    public List<RDFNode> query(Model model, String queryString) {
+        List<RDFNode> nodes = new ArrayList<>();
+        Query query = QueryFactory.create(queryString);
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
             ResultSet results = qexec.execSelect();
             while (results.hasNext()) {
                 QuerySolution solution = results.nextSolution();
-                RDFNode node = solution.get("");
-                System.out.println(node);
+                for (String var : query.getResultVars()) {
+                    nodes.add(solution.get(var));
+                }
             }
         }
+        return nodes;
     }
 
     public void simpleSelect(Model model, String subject, String predicate, String object) {
         Resource resource = model.getResource(subject);
+
         Property property = DS.PATIENT;
         StmtIterator iterator = model.listStatements(new SimpleSelector(resource, property, object));
         while (iterator.hasNext()) {
@@ -63,5 +68,42 @@ public class RdfService {
             }
             System.out.println();
         }
+    }
+
+    public Map<RDFNode, List<RDFNode>> getNodeProperties(Model model, String nodeId) {
+        Map<RDFNode, List<RDFNode>> properties = new HashMap<>();
+        Resource resource = model.getResource(nodeId);
+        if (resource.isLiteral()) {
+            return properties;
+        }
+        StmtIterator iterator = resource.listProperties();
+        Statement statement;
+        Property property;
+        while (iterator.hasNext()) {
+            statement = iterator.nextStatement();
+            property = statement.getPredicate();
+            if (!properties.containsKey(property)) {
+                properties.put(property, new ArrayList<>());
+            }
+            properties.get(property).add(statement.getObject());
+        }
+        System.out.println("Properties:\n" + properties.toString());
+        return properties;
+    }
+
+    public Map<RDFNode, List<RDFNode>> getSuggestions(Model ontModel, List<RDFNode> nodes) {
+        Map<RDFNode, List<RDFNode>> suggestions = new HashMap<>();
+        for (RDFNode node : nodes) {
+            if (node.isResource()) {
+                StmtIterator iterator = node.asResource().listProperties();
+                while (iterator.hasNext()) {
+                    if (!suggestions.containsKey(node)) {
+                        suggestions.put(node, new ArrayList<>());
+                    }
+                    suggestions.get(node).add(iterator.nextStatement().getObject());
+                }
+            }
+        }
+        return suggestions;
     }
 }
