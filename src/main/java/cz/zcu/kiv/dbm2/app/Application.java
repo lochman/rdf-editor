@@ -30,6 +30,46 @@ import java.util.Set;
 
 @SpringBootApplication(scanBasePackages = {"cz.zcu.kiv.dbm2"})
 public class Application {
+    /*
+    **************
+    *   ZADANI   *
+    **************
+    7) Editor hodnot v RDF grafu (Java nebo Web, RDF, SPARQL)
+    + GUI
+    + desktop nebo web
+    + nalezení uzlu, výpis jeho hodnot a inline editor hodnot
+    + našeptávání při vyplňování objektových vlasností
+    in: describe odpověď nebo model + ontologie (kvůli našeptávání)
+    out: RDF update (DELETE+INSERT) **změněných** dat
+    data: ibds.ttl, ibd.owl
+
+
+    +-------------+
+    |   IBD.owl   |
+    +-------------+
+    ontologie pro Inflammatory bowel disease
+    importuje DASTA ontologii (https://mre.zcu.cz/ontology/dasta.owl)
+    základní struktura:
+      dasta:Patient 		-ibd:hasInflammatoryBowelDisease-> 	ibd:InflammatoryBowelDisease
+      ibd:InflammatoryBowelDisease 	-diagnosisDate-> 			""^^xsd:date
+      ibd:InflammatoryBowelDisease 	-hasCharacteristic-> 			ibd:IBDCharacteristic
+
+      //např. XYZ = Histology, Immunology, Height
+      dasta:Patient 		-ibd:hasXYZ-> 				ibd:XYZ
+      ibd:XYZ			-ibd:eventDate->			""^^xsd:date
+
+    v ontologii definované slovníkové pojmy jako owl:NamedIndividuals, poznáte dle:
+      //např. XY = IBDCharacteristic, VOCAB1 = Penetrating
+      ibd:XY 			-rdfs:subClassOf-> 			ibd:ControlledVocabulary
+      ibd:VOCAB1			-rdf:type->				ibd:XY
+
+    +--------------+
+    |   ibds.ttl   |
+    +--------------+
+    využívá ontologii ibds
+    3 pacienti (ds:Patient) - co se týká timpointů, pak to je: ideálně vyplněný, složitěji ideálně vyplněný, možná reálná situace
+    */
+
     public static void main(String[] args) { SpringApplication.run(Application.class, args); }
 
     /*

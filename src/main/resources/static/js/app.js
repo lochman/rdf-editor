@@ -1,3 +1,4 @@
+/*
 var parser = N3.Parser();
 var store = N3.Store();
 
@@ -24,3 +25,4 @@ function findObject(subject, predicate, object) {
   console.log(result);
   console.log(result.subject, result.predicate, result.object, '.');
 }
+*/

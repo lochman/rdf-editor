@@ -18,22 +18,23 @@ stopLoader = () =>{
 //stop initial loader	
 stopLoader();	
 var processFiles = (event) =>{
-                var rdfFile = $("#rdf-file")[0].files[0];
-		var owlFile = $("#owl-file")[0].files[0];
-		console.log($("#owl-file")[0].files[0]);
-		if (!rdfFile) {
-			alert("Failed to load RDF file");
-			return false;
-		}
-		if (!owlFile) {
-			alert("Failed to load OWL file");
-                        event.preventDefault();
-                        return false;
-		}
-		//rdfReader.readAsText(rdfFile);
-		//owlReader.readAsText(owlFile);
-		//starting loader for parsing
-		startLoader(1);
+	var rdfFile = $("#rdf-file")[0].files[0];
+	var owlFile = $("#owl-file")[0].files[0];
+	console.log($("#owl-file")[0].files[0]);
+	if (!rdfFile) {
+		alert("Failed to load RDF file");
+		return false;
+	}
+	if (!owlFile) {
+		alert("Failed to load OWL file");
+		event.preventDefault();
+		return false;
+	}
+	//rdfReader.readAsText(rdfFile);
+	//owlReader.readAsText(owlFile);
+	//starting loader for parsing
+	startLoader(1);
+	return true;
 }
 /*
 // Check for the various File API support.
