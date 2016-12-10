@@ -50,8 +50,10 @@
             <groupId>cz.zcu.mre</groupId>
             <artifactId>ontology</artifactId>
             <version>5.0.0</version>
+			<!--
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/ontology-5.0.0.jar</systemPath>
+			-->
         </dependency>
     </dependencies>
 

@@ -6,6 +6,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
 import java.util.*;
+import org.apache.jena.vocabulary.OWL;
 
 /**
  * Created by Matej Lochman on 10.12.16.
@@ -56,6 +57,22 @@ public class Node {
             Map<RDFNode, String> map = new HashMap<>();
             map.put(LABEL, getParam(entry.getValue(), RDFS.label));
             map.put(INPUT_TYPE, getParam(entry.getValue(), RDFS.range));
+            System.out.println("je to objectproperty" +entry.getValue().get(RDF.type).contains(OWL.ObjectProperty) + " cardinalita " +entry.getValue().get(IBD.CARDINALITY));
+            //object property needs to browse deeper
+            if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){           
+                //only one to one mapping
+            
+                if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
+                    System.out.println("\tsingle cardinality " + entry.getValue().get(RDFS.range));
+                    
+                }else{
+                    //can have multiple values
+                    System.out.println("\tmultiple cardinality " + entry.getValue().get(RDFS.range));
+                }
+            }
+            else if(entry.getValue().get(RDF.type).contains(OWL.DatatypeProperty)) {
+                System.out.println("\tdatatype " + entry.getValue().get(RDFS.range));
+            }
             inputParams.put(entry.getKey(), map);
         }
     }
