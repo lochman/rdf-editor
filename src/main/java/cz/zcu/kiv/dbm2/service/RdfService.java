@@ -70,13 +70,12 @@ public class RdfService {
         }
     }
 
-    public Map<RDFNode, List<RDFNode>> getNodeProperties(Model model, String nodeId) {
+    public Map<RDFNode, List<RDFNode>> getNodeProperties(Model model, RDFNode node) {
         Map<RDFNode, List<RDFNode>> properties = new HashMap<>();
-        Resource resource = model.getResource(nodeId);
-        if (resource.isLiteral()) {
+        if (node.isLiteral()) {
             return properties;
         }
-        StmtIterator iterator = resource.listProperties();
+        StmtIterator iterator = node.asResource().listProperties();
         Statement statement;
         Property property;
         while (iterator.hasNext()) {

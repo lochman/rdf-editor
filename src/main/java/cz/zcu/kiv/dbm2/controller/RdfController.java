@@ -72,7 +72,7 @@ public class RdfController {
     public String selectNode(@RequestParam("node-id") String nodeId) {
         System.out.println("Properties of node " + nodeId);
         Map<RDFNode, List<RDFNode>> properties;
-        properties = rdfService.getNodeProperties(rdfModel, nodeId);
+        properties = rdfService.getNodeProperties(rdfModel, rdfModel.getResource(nodeId));
         String type = "";
         for (Map.Entry<RDFNode, List<RDFNode>> entry : properties.entrySet()) {
             System.out.println("values of: " + entry.getKey().toString() + ":");
@@ -94,12 +94,13 @@ public class RdfController {
         Query query = QueryFactory.create(queryString) ;
         try (QueryExecution qexec = QueryExecutionFactory.create(query, ontModel)) {
             ResultSet results = qexec.execSelect() ;
-            for ( ; results.hasNext() ; )
-            {
-            QuerySolution soln = results.nextSolution() ;
-                System.out.println("je ve tridach a typech : "+soln.get("p"));       // Get a result variable by name.
+            while (results.hasNext()) {
+                QuerySolution solution = results.nextSolution();
+                RDFNode node = solution.get("p");
+                System.out.println("je ve tridach a typech : " + node); // Get a result variable by name.
           //  Resource r = soln.getResource("VarR") ; // Get a result variable - must be a resource
           //  Literal l = soln.getLiteral("VarL") ;   // Get a result variable - must be a literal
+                rdfService.getNodeProperties(ontModel, node);
             }
         }
         return "node";
