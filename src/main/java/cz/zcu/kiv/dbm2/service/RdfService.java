@@ -90,19 +90,27 @@ public class RdfService {
         return properties;
     }
 
-    public Map<RDFNode, List<RDFNode>> getSuggestions(Model ontModel, List<RDFNode> nodes) {
-        Map<RDFNode, List<RDFNode>> suggestions = new HashMap<>();
-        for (RDFNode node : nodes) {
-            if (node.isResource()) {
-                StmtIterator iterator = node.asResource().listProperties();
-                while (iterator.hasNext()) {
-                    if (!suggestions.containsKey(node)) {
-                        suggestions.put(node, new ArrayList<>());
-                    }
-                    suggestions.get(node).add(iterator.nextStatement().getObject());
-                }
+    public Map<RDFNode, Map<RDFNode, List<RDFNode>>> getClassesProperties(Model model, String type) {
+        Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties = new HashMap<>();
+        //"prefix :      <http://example.org/>\n" +
+        String queryString = "prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+                             "prefix owl:   <http://www.w3.org/2002/07/owl#>\n" +
+                             "prefix xsd:   <http://www.w3.org/2001/XMLSchema#>\n" +
+                             "prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#>\n" +
+                             "select ?p ?d where {" +
+                             "?p rdfs:domain/(owl:unionOf/rdf:rest*/rdf:first)* ?d\n" +
+                             "filter (isIri(?d) && ?d =  <" + type + "> )\n" +
+                             "}";
+        Query query = QueryFactory.create(queryString);
+        try (QueryExecution qexec = QueryExecutionFactory.create(query, model)) {
+            ResultSet results = qexec.execSelect();
+            while (results.hasNext()) {
+                QuerySolution solution = results.nextSolution();
+                RDFNode node = solution.get("p");
+                System.out.println("is in: " + node);
+                classesProperties.put(node, getNodeProperties(model, node));
             }
         }
-        return suggestions;
+        return classesProperties;
     }
 }
