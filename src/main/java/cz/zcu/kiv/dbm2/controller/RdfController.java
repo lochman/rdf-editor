@@ -80,6 +80,9 @@ public class RdfController {
         node.setClassesProperties(rdfService.getClassesProperties(ontModel, node.getType().toString()));
         node.setMemberOfClasses(new ArrayList<>(node.getClassesProperties().keySet()));
         model.addAttribute("node", node);
+        //for formating
+        model.addAttribute("model", rdfModel);
+        model.addAttribute("prefixes", rdfModel.getNsPrefixMap());
         node.parseInputParams();
         node.setGuideValues(rdfService.getGuideValues(rdfModel, ontModel, node.getGuideObjects()));
         return "node";

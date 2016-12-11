@@ -97,7 +97,10 @@ public class Node {
             //object property needs to browse deeper
             if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){ 
                 //non literal
-                map.put(LITERAL, NO);          
+                map.put(LITERAL, NO);   
+                if (entry.getValue().get(RDFS.range).get(0).asResource().hasProperty(RDF.type,OWL.Class)){
+                    System.out.println("###############divnej masakr");
+                }
                 //naseptavani
                 guideObjects.put(entry.getKey(), entry.getValue().get(RDFS.range));
                 //only one to one mapping                owl:NamedIndividual  
