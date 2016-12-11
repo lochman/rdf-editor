@@ -1,9 +1,11 @@
 package cz.zcu.kiv.dbm2.service;
 
-import cz.zcu.mre.vocab.DS;
+import cz.zcu.kiv.dbm2.app.Node;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.vocabulary.RDF;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,7 +13,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import org.apache.jena.vocabulary.RDF;
 
 /**
  * Created by Matej Lochman on 8.12.16.
@@ -127,13 +128,12 @@ public class RdfService {
             }
             properties.get(property).add(statement.getObject());
         }
-        System.out.println("Properties:\n" + properties.toString());
+//        System.out.println("Properties:\n" + properties.toString());
         return properties;
     }
 
     public Map<RDFNode, Map<RDFNode, List<RDFNode>>> getClassesProperties(Model model, String type) {
         Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties = new HashMap<>();
-        //"prefix :      <http://example.org/>\n" +
         String queryString = "prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
                              "prefix owl:   <http://www.w3.org/2002/07/owl#>\n" +
                              "prefix xsd:   <http://www.w3.org/2001/XMLSchema#>\n" +
@@ -148,10 +148,61 @@ public class RdfService {
             while (results.hasNext()) {
                 QuerySolution solution = results.nextSolution();
                 RDFNode node = solution.get("p");
-                System.out.println("is in: " + node);
+//                System.out.println("is in: " + node);
                 classesProperties.put(node, getNodeProperties(model, node));
             }
         }
         return classesProperties;
+    }
+
+    private String buildUpdateQuery(String nodeId, Map<String, String> deleteValues, Map<String, String> insertValues) {
+        StringBuilder query = new StringBuilder();
+        nodeId = "<" + nodeId + ">";
+        query.append("DELETE {\n");
+        for (Map.Entry<String, String> entry : deleteValues.entrySet()) {
+            query.append(nodeId + " <" + entry.getKey() + "> \"" + entry.getValue() + "\" .\n");
+        }
+        query.append("}\nINSERT {\n");
+        for (Map.Entry<String, String> entry : insertValues.entrySet()) {
+            query.append(nodeId + " <" + entry.getKey() + "> \"" + entry.getValue() + "\" .\n");
+        }
+        query.append("}\nWHERE { }\n");
+        return query.toString();
+    }
+
+    public String diffBetweenNodes(Model model, Node node, Map<String, String> inputs) {
+        Map<String, String> deleteValues = new HashMap<>();
+        Map<String, String> insertValues = new HashMap<>();
+        List<RDFNode> previousValues;
+        int index, delimPosition;
+        String nodeid;
+        Resource resource;
+        Map<RDFNode, List<RDFNode>> properties = node.getProperties();
+        for (Map.Entry<String, String> input : inputs.entrySet()) {
+            delimPosition = input.getKey().lastIndexOf("-");
+            nodeid = input.getKey().substring(0, delimPosition);
+            try {
+                index = Integer.parseInt(input.getKey().substring(delimPosition + 1, input.getKey().length()));
+            } catch (NumberFormatException e) {
+                index = 0;
+            }
+//            System.out.println("index " + index);
+            resource = model.getResource(nodeid);
+            if (!properties.containsKey(resource)) {
+                if (StringUtils.isBlank(input.getValue())) { continue; }
+                insertValues.put(nodeid, input.getValue());
+//                System.out.println("insertValues[" + nodeid + "] = " + input.getValue());
+            } else {
+                previousValues = properties.get(resource);
+//                System.out.println(previousValues.get(index) + " ?==? " + input.getValue());
+                if (!Objects.equals(previousValues.get(index).toString(), input.getValue())) {
+                    deleteValues.put(nodeid, previousValues.get(index).toString());
+                    insertValues.put(nodeid, input.getValue());
+                } else if (StringUtils.isBlank(input.getValue())) {
+                    deleteValues.put(nodeid, previousValues.get(index).toString());
+                }
+            }
+        }
+        return buildUpdateQuery(node.getNode().toString(), deleteValues, insertValues);
     }
 }
