@@ -14,12 +14,12 @@ import org.apache.jena.vocabulary.OWL;
 
 public class Node {
 
-    public static final RDFNode LABEL = RDFS.label;
-    public static final RDFNode INPUT_TYPE = RDFS.range;
-    public static final RDFNode CARDINALITY = IBD.CARDINALITY;
-    public static final String CARDINALITY_1 = "1";
-    public static final String CARDINALITY_N = "N";
-    public static final String NON_LITERAL = "nonLit";
+    public static final String LABEL = "label";
+    public static final String INPUT_TYPE = "type";
+    public static final String MULTIPLE_CARDINALITY =  "card";
+    public static final String YES = "yes";
+    public static final String NO = "no";
+    public static final String LITERAL = "literal";
 
     private RDFNode node;
     private RDFNode type;
@@ -30,7 +30,7 @@ public class Node {
     private Map<RDFNode, List<String>> guideValues;
     private List<RDFNode> memberOfClasses;
     private Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties;
-    private Map<RDFNode, Map<RDFNode, String>> inputParams;
+    private Map<RDFNode, Map<String, String>> inputParams;
 
     public Node(RDFNode node) {
         this.node = node;
@@ -53,21 +53,21 @@ public class Node {
     }
 
     private String parseInputType(Map<RDFNode, List<RDFNode>> properties) {
-        String string = "", type;
-        RDFNode node;
+        String string, valueType;
         if (!properties.containsKey(RDFS.range)) { return ""; }
-        node = properties.get(RDFS.range).get(0);
-        type = node.toString();
-        if ("http://www.w3.org/2001/XMLSchema#date".equals(type)) {
-            string = "date";
-        } else if ("http://www.w3.org/2001/XMLSchema#boolean".equals(type)) {
-            string = "checkbox";
-        } else if ("http://www.w3.org/2001/XMLSchema#integer".equals(type)) {
-            string = "number";
-        } else if ("http://www.w3.org/2001/XMLSchema#string".equals(type)) {
-            string = "text";
-        } else {
-            string = NON_LITERAL;
+        valueType = properties.get(RDFS.range).get(0).toString();
+        switch (valueType){ 
+            case "http://www.w3.org/2001/XMLSchema#date": {string = "date"; break;}
+            case "http://www.w3.org/2001/XMLSchema#boolean": {string = "checkbox"; break;}
+            case "http://www.w3.org/2001/XMLSchema#integer": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#float": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#double": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#decimal": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#long": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#int": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#short": {string = "number"; break;}
+            case "http://www.w3.org/2001/XMLSchema#string": {string = "text"; break;}
+            default: string = "text";
         }
         return string;
     }
@@ -87,29 +87,40 @@ public class Node {
     public void parseInputParams() {
         for (Map.Entry<RDFNode, Map<RDFNode, List<RDFNode>>> entry : classesProperties.entrySet()) {
 //            for (Map.Entry<RDFNode, List<RDFNode>> property : entry.getValue().entrySet()) {}
-            Map<RDFNode, String> map = new HashMap<>();
+            Map<String, String> map = new HashMap<>();
             map.put(LABEL, getParam(entry.getValue(), RDFS.label));
             map.put(INPUT_TYPE, parseInputType(entry.getValue()));
-            System.out.println("je to objectproperty" +entry.getValue().get(RDF.type).contains(OWL.ObjectProperty) + " cardinalita " +entry.getValue().get(IBD.CARDINALITY));
+            System.out.println("je to objectproperty" +entry.getValue().get(RDF.type).contains(OWL.ObjectProperty) + " cardinalita " +entry.getValue().get(IBD.CARDINALITY) +" klic " + entry.getKey());
+            //nevim proc, ale ignorace
+            if (entry.getValue().get(RDFS.range) == null) continue;
+
             //object property needs to browse deeper
-            if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){           
+            if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){ 
+                //non literal
+                map.put(LITERAL, NO);          
                 //naseptavani
                 guideObjects.put(entry.getKey(), entry.getValue().get(RDFS.range));
                 //only one to one mapping                owl:NamedIndividual  
                if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
+                    map.put(MULTIPLE_CARDINALITY, NO);   
                     System.out.println("\tsingle cardinality " + entry.getValue().get(RDFS.range));
                     
                 }else{
                     //can have multiple values
+                    map.put(MULTIPLE_CARDINALITY, YES);   
                     System.out.println("\tmultiple cardinality " + entry.getValue().get(RDFS.range));
                 }
             }
+            //datatype property (literal)
             else if(entry.getValue().get(RDF.type).contains(OWL.DatatypeProperty)) {
+                map.put(LITERAL, YES);         
                 if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
+                    map.put(MULTIPLE_CARDINALITY, NO);         
                     System.out.println("\tsingle datatype " + entry.getValue().get(RDFS.range));
                     
-                }else{
+                }else{      
                     //can have multiple values
+                    map.put(MULTIPLE_CARDINALITY, YES);   
                     System.out.println("\tmultiple datattype " + entry.getValue().get(RDFS.range));
                 }
             }
@@ -157,13 +168,14 @@ public class Node {
         this.classesProperties = classesProperties;
     }
 
-    public Map<RDFNode, Map<RDFNode, String>> getInputParams() {
+    public Map<RDFNode, Map<String, String>> getInputParams() {
         return inputParams;
     }
 
-    public void setInputParams(Map<RDFNode, Map<RDFNode, String>> inputParams) {
+    public void setInputParams(Map<RDFNode, Map<String, String>> inputParams) {
         this.inputParams = inputParams;
     }
+
 
     public Map<RDFNode, List<RDFNode>> getGuideObjects() {
         return guideObjects;

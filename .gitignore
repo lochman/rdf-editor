@@ -1,6 +1,7 @@
 *.class
 *.war
-
+#NetBeans
+nbactions.xml
 # Eclipse
 .classpath
 .project

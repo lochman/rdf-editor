@@ -42,20 +42,33 @@ public class RdfService {
         //for every class
         for (Map.Entry<RDFNode, List<RDFNode>> entry : guideObjects.entrySet()) {
             guideValues.put(entry.getKey(), new ArrayList());
+            System.out.println("entry je " + entry.getValue());
             //for every range (usualy one)
             for (RDFNode object : entry.getValue()) {
                 ResIterator iter = rdfModel.listResourcesWithProperty(RDF.type, object);
                 System.out.println("Pro object " + object.toString() + " nalezeno:");
                 //add all found instances
                 while(iter.hasNext()){
-                    String inst = iter.next().toString();
+                    Resource r = iter.next();
+                  //  System.out.println("bonus" + r.getPropertyResourceValue(RDF.type));
+                    String inst = r.toString();
+                    if (ontModel.qnameFor(inst) != null) inst = rdfModel.qnameFor(inst);
                     System.out.println("\t res: "+ inst);
                     guideValues.get(entry.getKey()).add(inst);
                 }
                 //add all named individuals
                 ResIterator iter2 = ontModel.listResourcesWithProperty(RDF.type, object); 
                 while(iter2.hasNext()){
-                    String inst = iter2.next().toString();
+                    Resource r = iter2.next();
+                   // System.out.println(r.getPropertyResourceValue(RDF.type));
+                    /*StmtIterator st = r.listProperties(RDF.type);
+                    while(st.hasNext()){
+                    Statement s = st.next();
+                   
+                    System.out.println("bonus" +r.getPropertyResourceValue(RDF.type)+" " +s.toString() + " " + s.getObject().toString());
+                    }*/
+                    String inst = r.toString();
+                    if (ontModel.qnameFor(inst) != null) inst = ontModel.qnameFor(inst);
                     System.out.println("\t enum: "+ inst);
                     guideValues.get(entry.getKey()).add(inst);
                 }  
