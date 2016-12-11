@@ -11,7 +11,13 @@
 <form id="form-query" th:action="@{/rdf/node}" method="post" enctype="multipart/form-data">
     <div th:each="entry : ${node.inputParams}" class="form-group">
         <label th:for="${entry.key}" th:text="${entry.value.get(node.LABEL)}"></label>
-        <input th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${node.properties.get(entry.key)}" th:id="${entry.key}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+        <div th:with="nonliteral = ${node.NON_LITERAL} == ${entry.value.get(node.INPUT_TYPE)}">
+            <p th:if="${nonliteral}" th:id="'p' + ${entry.key}" th:text="${node.properties.get(entry.key)}"></p>
+            <input th:list="'list' + ${entry.key}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${nonliteral} ? '' : ${node.properties.get(entry.key)}" th:id="${entry.key}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+            <datalist th:id="'list' + ${entry.key}">
+                <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
+            </datalist>
+        </div>
     </div>
 </form>
 

@@ -50,10 +50,13 @@
             <groupId>cz.zcu.mre</groupId>
             <artifactId>ontology</artifactId>
             <version>5.0.0</version>
-			<!--
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/ontology-5.0.0.jar</systemPath>
-			-->
+            <!-- link library localy, but it doesnt get included in .jar -->
+            <!--
+                <scope>system</scope>
+                <systemPath>${project.basedir}/lib/ontology-5.0.0.jar</systemPath>
+            -->
+            <!-- Or install library to local mvn repo. lib gets included in jar. -->
+            <!--mvn install:install-file -Dfile="lib/ontology-5.0.0.jar" -DgroupId=cz.zcu.mre -DartifactId=ontology -Dversion=5.0.0 -Dpackaging=jar-->
         </dependency>
     </dependencies>
 

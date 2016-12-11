@@ -19,14 +19,15 @@ public class Node {
     public static final RDFNode CARDINALITY = IBD.CARDINALITY;
     public static final String CARDINALITY_1 = "1";
     public static final String CARDINALITY_N = "N";
+    public static final String NON_LITERAL = "nonLit";
 
     private RDFNode node;
     private RDFNode type;
     private Map<RDFNode, List<RDFNode>> properties;
     //list of owl classes (objects) to query for guide values
-    private Map<RDFNode,List<RDFNode>> guideObjects;
+    private Map<RDFNode, List<RDFNode>> guideObjects;
     //guide values for each predicate
-    private Map<RDFNode,List<String>> guideValues;
+    private Map<RDFNode, List<String>> guideValues;
     private List<RDFNode> memberOfClasses;
     private Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties;
     private Map<RDFNode, Map<RDFNode, String>> inputParams;
@@ -42,19 +43,45 @@ public class Node {
         inputParams = new HashMap<>();
     }
 
-    private String parseType(RDFNode type) { //TODO
-        String string = "";
-        if ("http://www.w3.org/2001/XMLSchema#string".equals(type)) {
-            string = "text";
+    private String parseLabel(List<RDFNode> labels) {
+        for (RDFNode node : labels) {
+            if ("cs".equals(node.asLiteral().getLanguage())) {
+                return node.toString().substring(0, node.toString().length() - 3);
+            }
+        }
+        return "";
+    }
+
+    private String parseInputType(Map<RDFNode, List<RDFNode>> properties) {
+        String string = "", type;
+        RDFNode node;
+        if (!properties.containsKey(RDFS.range)) { return ""; }
+        node = properties.get(RDFS.range).get(0);
+        type = node.toString();
+        if ("http://www.w3.org/2001/XMLSchema#date".equals(type)) {
+            string = "date";
+        } else if ("http://www.w3.org/2001/XMLSchema#boolean".equals(type)) {
+            string = "checkbox";
         } else if ("http://www.w3.org/2001/XMLSchema#integer".equals(type)) {
-            string = "integer";
+            string = "number";
+        } else if ("http://www.w3.org/2001/XMLSchema#string".equals(type)) {
+            string = "text";
+        } else {
+            string = NON_LITERAL;
         }
         return string;
     }
 
     private String getParam(Map<RDFNode, List<RDFNode>> properties, RDFNode property) {
+        String param;
+        List<RDFNode> prop;
         if (!properties.containsKey(property)) { return ""; }
-        return properties.get(property).get(0).toString(); // TODO
+        prop = properties.get(property);
+        if (RDFS.label.equals(property)) {
+            return parseLabel(prop);
+        }
+        param = prop.get(0).toString();
+        return param;
     }
 
     public void parseInputParams() {
@@ -62,7 +89,7 @@ public class Node {
 //            for (Map.Entry<RDFNode, List<RDFNode>> property : entry.getValue().entrySet()) {}
             Map<RDFNode, String> map = new HashMap<>();
             map.put(LABEL, getParam(entry.getValue(), RDFS.label));
-            map.put(INPUT_TYPE, getParam(entry.getValue(), RDFS.range));
+            map.put(INPUT_TYPE, parseInputType(entry.getValue()));
             System.out.println("je to objectproperty" +entry.getValue().get(RDF.type).contains(OWL.ObjectProperty) + " cardinalita " +entry.getValue().get(IBD.CARDINALITY));
             //object property needs to browse deeper
             if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){           

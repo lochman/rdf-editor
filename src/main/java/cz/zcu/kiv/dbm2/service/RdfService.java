@@ -81,8 +81,7 @@ public class RdfService {
 
     public void simpleSelect(Model model, String subject, String predicate, String object) {
         Resource resource = model.getResource(subject);
-
-        Property property = DS.PATIENT;
+        Property property = model.getProperty(predicate);
         StmtIterator iterator = model.listStatements(new SimpleSelector(resource, property, object));
         while (iterator.hasNext()) {
             Statement statement = iterator.nextStatement();
