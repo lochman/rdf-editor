@@ -1,52 +1,71 @@
 <!DOCTYPE html>
 <html lang="cz" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>Záznam</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/custom.css}"/>
-</head>
-<body>
-    <table class="table">        
-        <caption>Prefixes</caption>
-            <tr th:each="entry : ${prefixes}">
-                <td th:text="${entry.key}"></td>
-                <td th:text="${entry.value}"></td>
-            </tr>
-    </table>
-<form id="form-query" th:action="@{/rdf/node}" method="post" enctype="multipart/form-data">
-    <div th:each="entry : ${node.inputParams}" class="form-group">
-        <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.YES}">
-            <fieldset>
-                <legend class="col-sm-11" th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key.toString()) == null} ? ${entry.key} : ${model.qnameFor(entry.key)}"></legend> <button><span class="glyphicon glyphicon-plus"></span></button>
-                <div th:each="item,index : ${node.properties.get(entry.key)}">
-                <input th:list="'list' + ${entry.key} + '-' + index" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${model.qnameFor(item.toString()) == null} ? ${item} : ${model.qnameFor(item.toString())}" th:id="${entry.key} + '-' + ${index}" th:placeholder="${entry.value.get(node.LABEL)}"/>
-                <datalist th:id="'list' + ${entry.key} + '-' + index">
-                    <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
-                </datalist>
-                <button><span class="glyphicon glyphicon-minus"></span></button>
-                </div>
-            </fieldset>
-        </div>
-        <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.NO}">
-            <label th:for="${entry.key}" th:text="${entry.value.get(node.LABEL)}" data-toggle="tooltip" th:title="${model.qnameFor(entry.key.toString()) == null} ? ${entry.key} : ${model.qnameFor(entry.key)}"></label>
-            <div th:with="literal = ${node.YES} == ${entry.value.get(node.LITERAL)}">
-                <input th:list="'list' + ${entry.key}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" 
-                       th:value="${(node.properties.get(entry.key) == null) || (node.properties.get(entry.key).size() == 0)} ? '' : (${model.qnameFor(node.properties.get(entry.key).get(0).toString()) == null} ? ${node.properties.get(entry.key).get(0)} : ${model.qnameFor(node.properties.get(entry.key).get(0))})" th:id="${entry.key}" th:placeholder="${entry.value.get(node.LABEL)}"/>
-                <datalist th:id="'list' + ${entry.key}">
-                    <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
-                </datalist>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Záznam</title>
+        <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" th:href="@{/css/custom.css}"/>
+    </head>
+    <body>
+        <div class="overlay">
+            <div class="loader">
+            </div><!--loader-->
+        </div><!--overlay-->
+        <div class="container">
+            <div class="col-sm-12">
+                <table class="table">        
+                    <caption>Prefixes</caption>
+                    <tr th:each="entry : ${prefixes}">
+                        <td th:text="${entry.key}"></td>
+                        <td th:text="${entry.value}"></td>
+                    </tr>
+                </table>
             </div>
-        </div>
-    </div>
-</form>
+            <form id="form-query" th:action="@{/rdf/node/save}" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:value="${node.node}" name="node-id"/>
+                <fieldset th:each="entry : ${node.inputParams}">
+                    <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.YES}" th:id='par+${entry.key}'>
+                        <div class="col-sm-11" >
+                            <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key) == null} ? ${entry.key} : ${model.qnameFor(entry.key)}"></span></legend>
+                        </div>
+                        <div class="col-sm-1" >
+                            <button class="btn btn-xs btn-success" type="button" th:onclick="'addInput(\'' + ${entry.key} + '\',\'' + ${entry.value.get(node.INPUT_TYPE)} + '\', \'' + ${entry.value.get(node.LABEL)} + '\', \'' + ${node.guideValues.get(entry.key)} + '\');'"><span class="glyphicon glyphicon-plus"></span></button>
+                        </div>
+                        <div th:each="item,i : ${node.properties.get(entry.key)}" th:with="id = ${entry.key + '-' + i.index}" th:id="'div'+${id}" >
+                            <div  class="col-sm-11">
+                                <input th:list="${'list' + id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${model.qnameFor(item) == null} ? ${item} : ${model.qnameFor(item)}" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+                                <datalist th:id="${'list' + id}">
+                                    <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
+                                </datalist>
+                            </div>
+                            <div class="col-sm-1" >
+                                <button class="btn btn-xs btn-danger" type="button" th:onclick="'removeInput(\'' + ${id} + '\');'"><span class="glyphicon glyphicon-minus"></span></button>
+                            </div> 
+                        </div>
+                    </div>
+                    <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.NO}" th:with="id=${entry.key + '-0'}">
+                        <div  class="col-sm-11">
+                            <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key) == null} ? ${entry.key} : ${model.qnameFor(entry.key)}"></span></legend>
+                            <div th:with="literal = ${node.YES} == ${entry.value.get(node.LITERAL)}">
+                                <input th:list="'list' + ${id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" 
+                                       th:value="${(node.properties.get(entry.key) == null) || (node.properties.get(entry.key).size() == 0)} ? '' : (${model.qnameFor(node.properties.get(entry.key).get(0).toString()) == null} ? ${node.properties.get(entry.key).get(0)} : ${model.qnameFor(node.properties.get(entry.key).get(0).toString())})" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+                                <datalist th:id="'list' + ${id}">
+                                    <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
+                                </datalist>
+                            </div>
+                        </div>
+                        <div class="col-sm-1" >
 
-<script th:src="@{/js/jquery-3.1.1.min.js}"></script>
-<script th:src="@{/js/bootstrap.min.js}"></script>
-<script type="text/javascript">
-    $(document).ready(function(){
-        $('[data-toggle="tooltip"]').tooltip();   
-    });
-</script>
-</body>
+                        </div> 
+                    </div>
+                </fieldset>
+                <div class="col-sm-12" style="margin-top: 10px; margin-bottom: 20px;">
+                    <button class="btn btn-success"><span class="glyphicon glyphicon-floppy-disk"> Save</span></button>   
+                </div>
+            </form>
+        </div>
+        <script th:src="@{/js/jquery-3.1.1.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/node.js}"></script>
+    </body>
 </html>
