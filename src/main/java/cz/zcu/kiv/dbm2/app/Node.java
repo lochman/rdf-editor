@@ -23,6 +23,10 @@ public class Node {
     private RDFNode node;
     private RDFNode type;
     private Map<RDFNode, List<RDFNode>> properties;
+    //list of owl classes (objects) to query for guide values
+    private Map<RDFNode,List<RDFNode>> guideObjects;
+    //guide values for each predicate
+    private Map<RDFNode,List<String>> guideValues;
     private List<RDFNode> memberOfClasses;
     private Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties;
     private Map<RDFNode, Map<RDFNode, String>> inputParams;
@@ -32,6 +36,8 @@ public class Node {
         this.type = node.asResource().getProperty(RDF.type).getObject();
         properties = new HashMap<>();
         memberOfClasses = new ArrayList<>();
+        guideObjects = new HashMap<>();
+        guideValues = new HashMap<>();
         classesProperties = new HashMap<>();
         inputParams = new HashMap<>();
     }
@@ -60,9 +66,10 @@ public class Node {
             System.out.println("je to objectproperty" +entry.getValue().get(RDF.type).contains(OWL.ObjectProperty) + " cardinalita " +entry.getValue().get(IBD.CARDINALITY));
             //object property needs to browse deeper
             if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){           
-                //only one to one mapping
-            
-                if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
+                //naseptavani
+                guideObjects.put(entry.getKey(), entry.getValue().get(RDFS.range));
+                //only one to one mapping                owl:NamedIndividual  
+               if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
                     System.out.println("\tsingle cardinality " + entry.getValue().get(RDFS.range));
                     
                 }else{
@@ -71,7 +78,13 @@ public class Node {
                 }
             }
             else if(entry.getValue().get(RDF.type).contains(OWL.DatatypeProperty)) {
-                System.out.println("\tdatatype " + entry.getValue().get(RDFS.range));
+                if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
+                    System.out.println("\tsingle datatype " + entry.getValue().get(RDFS.range));
+                    
+                }else{
+                    //can have multiple values
+                    System.out.println("\tmultiple datattype " + entry.getValue().get(RDFS.range));
+                }
             }
             inputParams.put(entry.getKey(), map);
         }
@@ -124,4 +137,21 @@ public class Node {
     public void setInputParams(Map<RDFNode, Map<RDFNode, String>> inputParams) {
         this.inputParams = inputParams;
     }
+
+    public Map<RDFNode, List<RDFNode>> getGuideObjects() {
+        return guideObjects;
+    }
+
+    public void setGuideObjects(Map<RDFNode, List<RDFNode>> guideObjects) {
+        this.guideObjects = guideObjects;
+    }
+
+    public Map<RDFNode, List<String>> getGuideValues() {
+        return guideValues;
+    }
+
+    public void setGuideValues(Map<RDFNode, List<String>> guideValues) {
+        this.guideValues = guideValues;
+    }
+    
 }

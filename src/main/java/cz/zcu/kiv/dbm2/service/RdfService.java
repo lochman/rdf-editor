@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import org.apache.jena.vocabulary.RDF;
 
 /**
  * Created by Matej Lochman on 8.12.16.
@@ -35,6 +36,34 @@ public class RdfService {
         return ontologyModel;
     }
 
+    //prepare guide values for node
+    public Map<RDFNode, List<String>>getGuideValues(Model rdfModel, Model ontModel, Map<RDFNode, List<RDFNode>> guideObjects) {
+        Map<RDFNode, List<String>> guideValues = new HashMap();
+        //for every class
+        for (Map.Entry<RDFNode, List<RDFNode>> entry : guideObjects.entrySet()) {
+            guideValues.put(entry.getKey(), new ArrayList());
+            //for every range (usualy one)
+            for (RDFNode object : entry.getValue()) {
+                ResIterator iter = rdfModel.listResourcesWithProperty(RDF.type, object);
+                System.out.println("Pro object " + object.toString() + " nalezeno:");
+                //add all found instances
+                while(iter.hasNext()){
+                    String inst = iter.next().toString();
+                    System.out.println("\t res: "+ inst);
+                    guideValues.get(entry.getKey()).add(inst);
+                }
+                //add all named individuals
+                ResIterator iter2 = ontModel.listResourcesWithProperty(RDF.type, object); 
+                while(iter2.hasNext()){
+                    String inst = iter2.next().toString();
+                    System.out.println("\t enum: "+ inst);
+                    guideValues.get(entry.getKey()).add(inst);
+                }  
+            }
+        }
+        return guideValues;
+    }
+    
     public List<RDFNode> query(Model model, String queryString) {
         List<RDFNode> nodes = new ArrayList<>();
         Query query = QueryFactory.create(queryString);

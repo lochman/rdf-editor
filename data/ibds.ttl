@@ -331,7 +331,7 @@
         ibd:pCDAI      35 .
 
 <http://test/aa58461c-245f-43df-9d5c-c78a2618bedd>
-        a                        ds:height ;
+        a                        ds:Height ;
         ds:weightValue           "47.0"^^xsd:float ;
         ibd:eventDate            "2015-06-18"^^xsd:date ;
         ibd:weightStandardScore  "0.1"^^xsd:float .
@@ -523,8 +523,8 @@ mreid:a4c0dede9b6709333e7a2be7e3203dee0477b58e
         ds:weightValue           "60.0"^^xsd:float ;
         ibd:eventDate            "2016-01-05"^^xsd:date ;
         ibd:weightStandardScore  "0.1"^^xsd:float .
-
 <http://test/b00ab62c-0524-4df1-a081-a69caa13f184>
+
         a              ibd:Checkup ;
         ibd:eventDate  "2016-01-08"^^xsd:date ;
         ibd:has6MMP    ibd:High ;
