@@ -5,24 +5,26 @@ import cz.zcu.kiv.dbm2.service.RdfService;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.update.UpdateAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.ByteArrayOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
  * Created by Matej Lochman on 14.11.16.
@@ -37,6 +39,7 @@ public class RdfController {
     private org.apache.jena.rdf.model.Model rdfModel;
     private OntModel ontModel;
     private static Map<String, Node> handledNodes = new HashMap<>();
+//    private static Map<String, String> handledQueries = new HashMap<>();
     private String rdfFilename = "";
 
     @Autowired
@@ -91,7 +94,6 @@ public class RdfController {
 
         node.parseInputParams();
         node.setGuideValues(rdfService.getGuideValues(rdfModel, ontModel, node.getGuideObjects()));
-        System.out.println("created node " + node.getNode().toString());
         handledNodes.put(node.getNode().toString(), node);
         return node;
     }
@@ -132,21 +134,18 @@ public class RdfController {
 //        System.out.println("Saving nodeid: " + nodeId);
         String query = rdfService.diffBetweenNodes(rdfModel, handledNodes.get(nodeId), inputs);
         UpdateAction.parseExecute(query, rdfModel);
-        model.addAttribute("message", query);
+        model.addAttribute("query", query);
         handledNodes.remove(nodeId);
-        return "error";
+        return "redirect:/node?nodeid=" + nodeId;
     }
-/*
+
+//    @GetMapping("/export/sparql")
+//    public String getUpdateQuery() {
+//        handledQueries.remove();
+//        return null;
+//    }
+
     @GetMapping("/export/rdf")
-    @ResponseBody
-    public byte[] getModel() {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        rdfModel.write(outputStream, "TTL");
-        rdfModel.write(System.out, "TTL");
-        return outputStream.toByteArray();
-    }
-*/
-     @GetMapping("/export/rdf")
     public String getModel(HttpServletResponse response, Model model) throws IOException {
         if (rdfModel.isEmpty()) {
             model.addAttribute("message", "RDF soubor je prázdný");            

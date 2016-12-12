@@ -1,13 +1,15 @@
 package cz.zcu.kiv.dbm2.app;
 
-import cz.zcu.mre.vocab.IBD;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
-import java.util.*;
-import org.apache.jena.vocabulary.OWL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Matej Lochman on 10.12.16.

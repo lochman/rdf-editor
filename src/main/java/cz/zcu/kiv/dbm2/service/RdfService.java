@@ -215,6 +215,7 @@ public class RdfService {
                 for (RDFNode pvalue : previousValues) {
                     if (pvalue.toString().equals(value)) {
                         lastVal = pvalue.toString();
+                        previousValues.remove(pvalue);
                         break;
                     }
                 }
@@ -228,6 +229,12 @@ public class RdfService {
                 }
             }
         }
+        for (Map.Entry<RDFNode, List<RDFNode>> property : properties.entrySet()) {
+            for (RDFNode n : property.getValue()) {
+                addToNestedMap(deleteValues, property.getKey().toString(), n.toString());
+            }
+        }
+
         return buildUpdateQuery(node.getNode().toString(), deleteValues, insertValues);
     }
 }

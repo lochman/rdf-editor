@@ -35,6 +35,9 @@
                     </ul>
                 </div><!-- /.container-fluid -->
             </nav>
+            <div th:if="${query}" th:text="${query}" class="alert alert-success">
+                <strong>Změny byly uloženy!</strong>
+            </div>
             <div class="col-sm-12">
                 <table class="table">        
                     <caption>Prefixy</caption>
