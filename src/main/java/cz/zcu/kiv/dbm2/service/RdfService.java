@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.springframework.stereotype.Service;
@@ -39,23 +40,23 @@ public class RdfService {
     }
 
     //prepare guide values for node
-    public Map<RDFNode, List<String>>getGuideValues(Model rdfModel, Model ontModel, Map<RDFNode, List<RDFNode>> guideObjects) {
+    public Map<RDFNode, List<String>> getGuideValues(Model rdfModel, Model ontModel, Map<RDFNode, List<RDFNode>> guideObjects) {
         Map<RDFNode, List<String>> guideValues = new HashMap();
         //for every class
         for (Map.Entry<RDFNode, List<RDFNode>> entry : guideObjects.entrySet()) {
             guideValues.put(entry.getKey(), new ArrayList());
-            System.out.println("entry je " + entry.getValue());
+//            System.out.println("entry je " + entry.getValue());
             //for every range (usualy one)
             for (RDFNode object : entry.getValue()) {
                 ResIterator iter = rdfModel.listResourcesWithProperty(RDF.type, object);
-                System.out.println("Pro object " + object.toString() + " nalezeno:");
+//                System.out.println("Pro object " + object.toString() + " nalezeno:");
                 //add all found instances
                 while(iter.hasNext()){
                     Resource r = iter.next();
                   //  System.out.println("bonus" + r.getPropertyResourceValue(RDF.type));
                     String inst = r.toString();
                     if (ontModel.qnameFor(inst) != null) inst = rdfModel.qnameFor(inst);
-                    System.out.println("\t res: "+ inst);
+//                    System.out.println("\t res: "+ inst);
                     guideValues.get(entry.getKey()).add(inst);
                 }
                 //add all named individuals
@@ -71,7 +72,7 @@ public class RdfService {
                     }*/
                     String inst = r.toString();
                     if (ontModel.qnameFor(inst) != null) inst = ontModel.qnameFor(inst);
-                    System.out.println("\t enum: "+ inst);
+//                    System.out.println("\t enum: "+ inst);
                     guideValues.get(entry.getKey()).add(inst);
                 }  
             }
@@ -129,7 +130,6 @@ public class RdfService {
             }
             properties.get(property).add(statement.getObject());
         }
-//        System.out.println("Properties:\n" + properties.toString());
         return properties;
     }
 
@@ -149,28 +149,35 @@ public class RdfService {
             while (results.hasNext()) {
                 QuerySolution solution = results.nextSolution();
                 RDFNode node = solution.get("p");
-//                System.out.println("is in: " + node);
                 classesProperties.put(node, getNodeProperties(model, node));
             }
         }
         return classesProperties;
     }
 
-    private String buildUpdateQuery(String nodeId, Map<String, List<String>>  deleteValues, Map<String, List<String>>  insertValues) {
+    private String concatStringVals(String nodeId, Map<RDFNode, List<String>> values) {
+        String result = "", open, close;
+        for (Map.Entry<RDFNode, List <String>> entry : values.entrySet()) {
+            if (Objects.equals(entry.getKey().asResource().getProperty(RDF.type), OWL.DatatypeProperty)) {
+                open = "<";
+                close = ">";
+            } else {
+                open = close = "\"";
+            }
+            for (String val : entry.getValue()) {
+                result += nodeId + " <" + entry.getKey() + "> " + open + val + close + " .\n";
+            }
+        }
+        return result;
+    }
+
+    private String buildUpdateQuery(String nodeId, Map<RDFNode, List<String>>  deleteValues, Map<RDFNode, List<String>>  insertValues) {
         StringBuilder query = new StringBuilder();
         nodeId = "<" + nodeId + ">";
         query.append("DELETE {\n");
-        for (Map.Entry<String, List <String>> entry : deleteValues.entrySet()) {
-            for (String val : entry.getValue()) {
-                query.append(nodeId + " <" + entry.getKey() + "> \"" + val + "\" .\n");
-            }
-        }
+        query.append(concatStringVals(nodeId, deleteValues));
         query.append("}\nINSERT {\n");
-        for (Map.Entry<String, List <String>> entry : insertValues.entrySet()) {
-            for (String val : entry.getValue()) {
-                query.append(nodeId + " <" + entry.getKey() + "> \"" + val + "\" .\n");
-            }
-        }
+        query.append(concatStringVals(nodeId, insertValues));
         query.append("}\nWHERE { }\n");
         return query.toString();
     }
@@ -189,14 +196,14 @@ public class RdfService {
         return value;
     }
 
-    private void addToNestedMap(Map<String, List<String>> values, String key, String value) {
+    private void addToNestedMap(Map<RDFNode, List<String>> values, RDFNode key, String value) {
         if (!values.containsKey(key)) { values.put(key, new ArrayList<>()); }
         values.get(key).add(value);
     }
 
     public String diffBetweenNodes(Model model, Node node, Map<String, String> inputs) {
-        Map<String, List<String>> deleteValues = new HashMap<>();
-        Map<String, List<String>> insertValues = new HashMap<>();
+        Map<RDFNode, List<String>> deleteValues = new HashMap<>();
+        Map<RDFNode, List<String>> insertValues = new HashMap<>();
         List<RDFNode> previousValues;
         int delimPosition;
         String nodeid, value, lastVal;
@@ -208,7 +215,7 @@ public class RdfService {
             resource = model.getResource(nodeid);
             value = appendDataType(node, resource, input.getValue());
             if (!properties.containsKey(resource)) {
-                if (!StringUtils.isBlank(value)) { addToNestedMap(insertValues, nodeid, value); }
+                if (!StringUtils.isBlank(value)) { addToNestedMap(insertValues, resource, value); }
             } else {
                 previousValues = properties.get(resource);
                 lastVal = "";
@@ -220,18 +227,19 @@ public class RdfService {
                     }
                 }
                 if (StringUtils.isBlank(lastVal)) {
-                    if (!StringUtils.isBlank(value)) { addToNestedMap(insertValues, nodeid, value); }
+                    if (!StringUtils.isBlank(value)) { addToNestedMap(insertValues, resource, value); }
                 } else if (StringUtils.isBlank(value)) {
-                    addToNestedMap(deleteValues, nodeid, lastVal);
+                    addToNestedMap(deleteValues, resource, lastVal);
                 } else if (!Objects.equals(lastVal, value)) {
-                    addToNestedMap(deleteValues, nodeid, lastVal);
-                    addToNestedMap(insertValues, nodeid, value);
+                    addToNestedMap(deleteValues, resource, lastVal);
+                    addToNestedMap(insertValues, resource, value);
                 }
             }
         }
+        properties.remove(RDF.type);
         for (Map.Entry<RDFNode, List<RDFNode>> property : properties.entrySet()) {
             for (RDFNode n : property.getValue()) {
-                addToNestedMap(deleteValues, property.getKey().toString(), n.toString());
+                addToNestedMap(deleteValues, property.getKey(), n.toString());
             }
         }
 
