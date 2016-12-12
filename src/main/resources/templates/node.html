@@ -35,8 +35,10 @@
                     </ul>
                 </div><!-- /.container-fluid -->
             </nav>
-            <div th:if="${query}" th:text="${query}" class="alert alert-success">
-                <strong>Změny byly uloženy!</strong>
+            <div th:if="${query}" class="alert alert-success alert-dismissible fade in">
+                <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                <strong>Změny byly uloženy!</strong><br/>
+                <div style="white-space:pre-wrap" th:text="${query}"></div>
             </div>
             <div class="col-sm-12">
                 <table class="table">        

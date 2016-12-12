@@ -129,14 +129,14 @@ public class RdfController {
     }
 
     @PostMapping("/node/save")
-    public String acceptForm(@RequestParam Map<String, String> inputs, Model model) {
+    public String acceptForm(@RequestParam Map<String, String> inputs, RedirectAttributes redirectAttributes) {
         String nodeId = inputs.remove("node-id");
 //        System.out.println("Saving nodeid: " + nodeId);
         String query = rdfService.diffBetweenNodes(rdfModel, handledNodes.get(nodeId), inputs);
         UpdateAction.parseExecute(query, rdfModel);
-        model.addAttribute("query", query);
+        redirectAttributes.addFlashAttribute("query", "SPARQL Update query:\n" + query);
         handledNodes.remove(nodeId);
-        return "redirect:/node?nodeid=" + nodeId;
+        return "redirect:/rdf/node?nodeid=" + nodeId;
     }
 
 //    @GetMapping("/export/sparql")
