@@ -61,7 +61,7 @@ public class RdfController {
                            @RequestParam("owl-file") MultipartFile ontFile,
                            RedirectAttributes redirectAttributes) {
         try {
-            rdfModel = ModelFactory.createDefaultModel()
+            rdfModel = ModelFactory.createDefaultModel();
             rdfService.fileToModel(rdfModel, rdfFile, getFileType(rdfFile));
             rdfFilename = rdfFile.getOriginalFilename();
             if (ontFile != null) {

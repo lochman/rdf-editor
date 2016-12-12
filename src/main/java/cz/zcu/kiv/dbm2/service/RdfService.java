@@ -156,16 +156,20 @@ public class RdfService {
         return classesProperties;
     }
 
-    private String buildUpdateQuery(String nodeId, Map<String, String> deleteValues, Map<String, String> insertValues) {
+    private String buildUpdateQuery(String nodeId, Map<String, List<String>>  deleteValues, Map<String, List<String>>  insertValues) {
         StringBuilder query = new StringBuilder();
         nodeId = "<" + nodeId + ">";
         query.append("DELETE {\n");
-        for (Map.Entry<String, String> entry : deleteValues.entrySet()) {
-            query.append(nodeId + " <" + entry.getKey() + "> \"" + entry.getValue() + "\" .\n");
+        for (Map.Entry<String, List <String>> entry : deleteValues.entrySet()) {
+            for (String val : entry.getValue()) {
+                query.append(nodeId + " <" + entry.getKey() + "> \"" + val + "\" .\n");
+            }
         }
         query.append("}\nINSERT {\n");
-        for (Map.Entry<String, String> entry : insertValues.entrySet()) {
-            query.append(nodeId + " <" + entry.getKey() + "> \"" + entry.getValue() + "\" .\n");
+        for (Map.Entry<String, List <String>> entry : insertValues.entrySet()) {
+            for (String val : entry.getValue()) {
+                query.append(nodeId + " <" + entry.getKey() + "> \"" + val + "\" .\n");
+            }
         }
         query.append("}\nWHERE { }\n");
         return query.toString();
@@ -185,9 +189,14 @@ public class RdfService {
         return value;
     }
 
+    private void addToNestedMap(Map<String, List<String>> values, String key, String value) {
+        if (!values.containsKey(key)) { values.put(key, new ArrayList<>()); }
+        values.get(key).add(value);
+    }
+
     public String diffBetweenNodes(Model model, Node node, Map<String, String> inputs) {
-        Map<String, String> deleteValues = new HashMap<>();
-        Map<String, String> insertValues = new HashMap<>();
+        Map<String, List<String>> deleteValues = new HashMap<>();
+        Map<String, List<String>> insertValues = new HashMap<>();
         List<RDFNode> previousValues;
         int delimPosition;
         String nodeid, value, lastVal;
@@ -199,7 +208,7 @@ public class RdfService {
             resource = model.getResource(nodeid);
             value = appendDataType(node, resource, input.getValue());
             if (!properties.containsKey(resource)) {
-                if (!StringUtils.isBlank(value)) { insertValues.put(nodeid, value); }
+                if (!StringUtils.isBlank(value)) { addToNestedMap(insertValues, nodeid, value); }
             } else {
                 previousValues = properties.get(resource);
                 lastVal = "";
@@ -210,12 +219,12 @@ public class RdfService {
                     }
                 }
                 if (StringUtils.isBlank(lastVal)) {
-                    if (!StringUtils.isBlank(value)) { insertValues.put(nodeid, value); }
+                    if (!StringUtils.isBlank(value)) { addToNestedMap(insertValues, nodeid, value); }
                 } else if (StringUtils.isBlank(value)) {
-                    deleteValues.put(nodeid, lastVal);
+                    addToNestedMap(deleteValues, nodeid, lastVal);
                 } else if (!Objects.equals(lastVal, value)) {
-                    deleteValues.put(nodeid, lastVal);
-                    insertValues.put(nodeid, value);
+                    addToNestedMap(deleteValues, nodeid, lastVal);
+                    addToNestedMap(insertValues, nodeid, value);
                 }
             }
         }
