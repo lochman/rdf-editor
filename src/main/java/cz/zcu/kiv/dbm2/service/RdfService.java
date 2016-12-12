@@ -155,10 +155,10 @@ public class RdfService {
         return classesProperties;
     }
 
-    private String concatStringVals(String nodeId, Map<RDFNode, List<String>> values) {
+    private String concatStringVals(Node node, String nodeId, Map<RDFNode, List<String>> values) {
         String result = "", open, close;
         for (Map.Entry<RDFNode, List <String>> entry : values.entrySet()) {
-            if (Objects.equals(entry.getKey().asResource().getProperty(RDF.type), OWL.DatatypeProperty)) {
+            if (!node.getClassesProperties().get(entry.getKey()).get(RDF.type).contains(OWL.DatatypeProperty)) {
                 open = "<";
                 close = ">";
             } else {
@@ -171,13 +171,13 @@ public class RdfService {
         return result;
     }
 
-    private String buildUpdateQuery(String nodeId, Map<RDFNode, List<String>>  deleteValues, Map<RDFNode, List<String>>  insertValues) {
+    private String buildUpdateQuery(Node node, Map<RDFNode, List<String>>  deleteValues, Map<RDFNode, List<String>>  insertValues) {
         StringBuilder query = new StringBuilder();
-        nodeId = "<" + nodeId + ">";
+        String nodeId = "<" + node.getNode().toString() + ">";
         query.append("DELETE {\n");
-        query.append(concatStringVals(nodeId, deleteValues));
+        query.append(concatStringVals(node, nodeId, deleteValues));
         query.append("}\nINSERT {\n");
-        query.append(concatStringVals(nodeId, insertValues));
+        query.append(concatStringVals(node, nodeId, insertValues));
         query.append("}\nWHERE { }\n");
         return query.toString();
     }
@@ -243,6 +243,6 @@ public class RdfService {
             }
         }
 
-        return buildUpdateQuery(node.getNode().toString(), deleteValues, insertValues);
+        return buildUpdateQuery(node, deleteValues, insertValues);
     }
 }
