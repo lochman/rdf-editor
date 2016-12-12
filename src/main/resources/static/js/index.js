@@ -5,18 +5,20 @@
 
 
 var _lock = 1;	
-startLoader = (lock) =>{
+var startLoader = (lock) =>{
 	_lock = lock;
 	$(".overlay").show();
 }
-stopLoader = () =>{
+var stopLoader = () =>{
 	_lock--;
 	if(_lock < 1){
 		$(".overlay").hide();
 	}	
 }
-//stop initial loader	
-stopLoader();	
+window.onpageshow = (event) => {     
+    //stop initial loader	
+    stopLoader();
+};
 var processFiles = (event) =>{
 	var rdfFile = $("#rdf-file")[0].files[0];
 	var owlFile = $("#owl-file")[0].files[0];

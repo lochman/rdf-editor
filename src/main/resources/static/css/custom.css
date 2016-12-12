@@ -8,7 +8,7 @@
 Custom rules
 */
 .btn-index{
-    width:120px;
+    width:100px;
 }
 /*
 File upload rules
@@ -75,4 +75,16 @@ Loader
 }
 .btn-xs{
     margin-top: 5px;
+}
+.navbar-form{
+    padding: 10px 5px;
+}
+.navbar-left{
+    width: calc(100% - 340px);
+}
+.navbar-form .form-group{
+    width: calc(100% - 95px);
+}
+.navbar-form .form-control{
+    width: 100%;
 }

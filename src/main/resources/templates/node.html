@@ -12,16 +12,32 @@
             </div><!--loader-->
         </div><!--overlay-->
         <div class="container">
+        <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <form class="navbar-form navbar-left" onsubmit="return processSearch(event)" th:action="@{/rdf/node}" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <input type="text" class="form-control"  required="true" id="node-id" name="node-id" placeholder="URL uzlu k editaci"/>
+                        </div>
+                        <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-search"></span>&nbsp; Otevři</button>
+                    </form>
+                    <form class="navbar-form navbar-right" th:action="@{/rdf/export}" method="get" enctype="text/plain">
+                        <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat úpravy</button>
+                    </form>
+                    <form class="navbar-form navbar-right" th:action="@{/}" method="get" enctype="text/plain">
+                        <button type="submit" class="btn btn-warning"><span class="glyphicon glyphicon-upload"></span>&nbsp; Nahrát soubory</button>
+                    </form>
+                </div><!-- /.container-fluid -->
+            </nav>
             <div class="col-sm-12">
                 <table class="table">        
-                    <caption>Prefixes</caption>
+                    <caption>Prefixy</caption>
                     <tr th:each="entry : ${prefixes}">
                         <td th:text="${entry.key}"></td>
                         <td th:text="${entry.value}"></td>
                     </tr>
                 </table>
             </div>
-            <form id="form-query" th:action="@{/rdf/node/save}" method="post" enctype="multipart/form-data">
+            <form id="form-query" th:action="@{/rdf/node/save}" onsubmit="return processSave(event)" method="post" enctype="multipart/form-data">
                 <input type="hidden" th:value="${node.node}" name="node-id"/>
                 <fieldset th:each="entry : ${node.inputParams}">
                     <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.YES}" th:id='par+${entry.key}'>
@@ -39,7 +55,7 @@
                                 </datalist>
                             </div>
                             <div class="col-sm-1" >
-                                <button class="btn btn-xs btn-danger" type="button" th:onclick="'removeInput(\'' + ${id} + '\');'"><span class="glyphicon glyphicon-minus"></span></button>
+                                <button class="btn btn-xs btn-danger" th:id="${'btn' + id}" type="button" th:onclick="'removeInput(\'' + ${id} + '\');'"><span class="glyphicon glyphicon-minus"></span></button>
                             </div> 
                         </div>
                     </div>
@@ -60,12 +76,13 @@
                     </div>
                 </fieldset>
                 <div class="col-sm-12" style="margin-top: 10px; margin-bottom: 20px;">
-                    <button class="btn btn-success"><span class="glyphicon glyphicon-floppy-disk"> Save</span></button>   
+                    <button class="btn btn-success"><span class="glyphicon glyphicon-floppy-disk"> Uložit</span></button>   
                 </div>
             </form>
         </div>
         <script th:src="@{/js/jquery-3.1.1.min.js}"></script>
         <script th:src="@{/js/bootstrap.min.js}"></script>
         <script th:src="@{/js/node.js}"></script>
+        <script th:src="@{/js/navbar.js}"></script>
     </body>
 </html>

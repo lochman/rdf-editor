@@ -1,24 +1,42 @@
 <!DOCTYPE html>
 <html lang="cz" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
-    <title>RDF Editor - uploaded</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
-    <link rel="stylesheet" th:href="@{/css/custom.css}"/>
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>RDF Editor - uploaded</title>
+        <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+        <link rel="stylesheet" th:href="@{/css/custom.css}"/>
+    </head>
+    <body>
+        <div class="overlay">
+            <div class="loader">
+            </div><!--loader-->
+        </div><!--overlay-->
+        <div class="container">
+       <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <form class="navbar-form navbar-left" onsubmit="return processSearch(event)" th:action="@{/rdf/node}" method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <input type="text" class="form-control"  required="true" id="node-id" name="node-id" placeholder="URL uzlu k editaci"/>
+                        </div>
+                        <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-search"></span>&nbsp; Otevři</button>
+                    </form>
+                    <form class="navbar-form navbar-right" th:action="@{/rdf/export}" method="get" enctype="text/plain">
+                        <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat úpravy</button>
+                    </form>
+                    <form class="navbar-form navbar-right" th:action="@{/}" method="get" enctype="text/plain">
+                        <button type="submit" class="btn btn-warning"><span class="glyphicon glyphicon-upload"></span>&nbsp; Nahrát soubory</button>
+                    </form>
+                </div><!-- /.container-fluid -->
+            </nav>
 
-    <h1>Enter node id to edit.</h1>
-    <form id="form-query" th:action="@{/rdf/node}" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="node-id">Subject</label>
-            <input type="text" class="form-control" required="true" id="node-id" name="node-id" placeholder="Nodeid to be edited"/>
+        <h1>Soubory nahrány!</h1>
+
+        <h2>Nyní můžete upravovat vlastnosti uzlů.</h2>
+
+        <h3>Pro otevření stránky s vlatnostmi zadejte jeho URL do vyhledávače v horní liště.</h3>
         </div>
-        <button class="btn btn-success btn-index" type="submit" ><span class="glyphicon glyphicon-search"> Search</span></button>
-    </form>
-
-    <script th:src="@{/js/jquery-3.1.1.min.js}"></script>
-    <script th:src="@{/js/bootstrap.min.js}"></script>
-
-</body>
+        <script th:src="@{/js/jquery-3.1.1.min.js}"></script>
+        <script th:src="@{/js/bootstrap.min.js}"></script>
+        <script th:src="@{/js/navbar.js}"></script>
+    </body>
 </html>

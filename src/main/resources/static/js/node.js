@@ -5,25 +5,34 @@
 
 
 var _lock = 1;	
-startLoader = (lock) =>{
+var startLoader = (lock) =>{
 	_lock = lock;
 	$(".overlay").show();
 }
-stopLoader = () =>{
+var stopLoader = () =>{
 	_lock--;
 	if(_lock < 1){
-		$(".overlay").hide();
+            $(".overlay").hide();
 	}	
 }
-$(document).ready(function(){
+window.onpageshow = (event) => {    
     $('[data-toggle="tooltip"]').tooltip();   
     //stop initial loader	
-    stopLoader();	
-});
+    stopLoader();
+};
+
+var processSave = (event) =>{
+    startLoader(1);
+    return true;
+}
 
 var removeInput = (id) =>{
-    divid = "div"+id;
-    $("div[id='"+divid+"']").remove();
+    console.log("wtf",id, document.getElementById(id), document.getElementById(id).type);
+    //$("input[id='"+id+"']").val("");
+    element = document.getElementById(id);
+    element.type = "hidden";
+    element.value = "";
+    $("button[id='btn"+id+"']").hide();
     return true;
 }
 
@@ -46,7 +55,7 @@ var addInput = (id, type, label, guide) =>{
 
     var html = "<div id=\"div"+id+"\">\n";
     html += "<div class=\"col-sm-11\">\n";
-    html += "<input list=\"list"+id+"\" type=\""+type+"\" class=\"form-control\" value=\"\" placeholder=\""+label+"\"/>\n";
+    html += "<input list=\"list"+id+"\" id=\"" + id + "\" name=\""+ id +"\"type=\""+type+"\" class=\"form-control\" value=\"\" placeholder=\""+label+"\"/>\n";
     html += "<datalist id=\"list" + id +"\">\n";
     for (x = 0; x < guideArr.length; x++){
         html += "<option value=\""+guideArr[x]+"\"/>\n"
@@ -54,7 +63,7 @@ var addInput = (id, type, label, guide) =>{
     html +="</datalist>\n";
     html +="</div>\n";
     html +="<div class=\"col-sm-1\">\n";
-    html +="<button class=\"btn-xs btn-danger\" type=\"button\" onclick=\"removeInput(\'" + id + "\');\"><span class=\"glyphicon glyphicon-minus\"></span></button>\n";
+    html +="<button id=\"btn"+ id +"\" class=\"btn-xs btn-danger\" type=\"button\" onclick=\"removeInput(\'" + id + "\');\"><span class=\"glyphicon glyphicon-minus\"></span></button>\n";
     html +="</div>\n";
     html +="</div>\n";
     parent.append(html);
