@@ -16,9 +16,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by Matej Lochman on 14.11.16.
@@ -33,6 +35,7 @@ public class RdfController {
     private org.apache.jena.rdf.model.Model rdfModel = ModelFactory.createDefaultModel();
     private OntModel ontModel = ModelFactory.createOntologyModel();
     private static Map<String, Node> handledNodes = new HashMap<>();
+    private String rdfFilename = "";
 
     @Autowired
     private RdfService rdfService;
@@ -58,6 +61,7 @@ public class RdfController {
                            RedirectAttributes redirectAttributes) {
         try {
             rdfService.fileToModel(rdfModel, rdfFile, getFileType(rdfFile));
+            rdfFilename = rdfFile.getOriginalFilename();
             if (ontFile != null) {
                 rdfService.fileToModel(ontModel, ontFile, getFileType(ontFile));
             }
@@ -119,7 +123,7 @@ public class RdfController {
         handledNodes.remove(nodeId);
         return "error";
     }
-
+/*
     @GetMapping("/export/rdf")
     @ResponseBody
     public byte[] getModel() {
@@ -128,7 +132,19 @@ public class RdfController {
         rdfModel.write(System.out, "TTL");
         return outputStream.toByteArray();
     }
-
+*/
+     @GetMapping("/export/rdf")
+    public String getModel(HttpServletResponse response, Model model) throws IOException {
+        if (rdfModel.isEmpty()) {
+            model.addAttribute("message", "RDF file is empty");            
+            return "error";
+        }
+        OutputStream outputStream = response.getOutputStream();
+        response.setContentType("text/turtle");
+        response.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"", rdfFilename));
+        rdfModel.write(outputStream, "TTL");
+        return null;
+    }
     @PostMapping("/simpleselect")
     public String simpleSelect(@RequestParam("subject") String subject,
                                @RequestParam("predicate") String predicate,

@@ -12,15 +12,13 @@ import org.apache.jena.vocabulary.OWL;
 /**
  * Created by Matej Lochman on 10.12.16.
  */
-
 public class Node {
 
     public static final String LABEL = "label";
     public static final String INPUT_TYPE = "type";
-    public static final String MULTIPLE_CARDINALITY =  "card";
+    public static final String MULTIPLE_CARDINALITY = "card";
     public static final String YES = "yes";
     public static final String NO = "no";
-    public static final String LITERAL = "literal";
 
     private RDFNode node;
     private RDFNode type;
@@ -66,20 +64,53 @@ public class Node {
 
     private String parseInputType(Map<RDFNode, List<RDFNode>> properties) {
         String string, valueType;
-        if (!properties.containsKey(RDFS.range)) { return ""; }
+        if (!properties.containsKey(RDFS.range)) {
+            return "";
+        }
         valueType = properties.get(RDFS.range).get(0).toString();
-        switch (valueType){ 
-            case "http://www.w3.org/2001/XMLSchema#date": {string = "date"; break;}
-            case "http://www.w3.org/2001/XMLSchema#boolean": {string = "checkbox"; break;}
-            case "http://www.w3.org/2001/XMLSchema#integer": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#float": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#double": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#decimal": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#long": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#int": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#short": {string = "number"; break;}
-            case "http://www.w3.org/2001/XMLSchema#string": {string = "text"; break;}
-            default: string = "text";
+        switch (valueType) {
+            case "http://www.w3.org/2001/XMLSchema#date": {
+                string = "date";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#boolean": {
+                string = "checkbox";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#integer": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#float": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#double": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#decimal": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#long": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#int": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#short": {
+                string = "number";
+                break;
+            }
+            case "http://www.w3.org/2001/XMLSchema#string": {
+                string = "text";
+                break;
+            }
+            default:
+                string = "text";
         }
         return string;
     }
@@ -87,7 +118,9 @@ public class Node {
     private String getParam(Map<RDFNode, List<RDFNode>> properties, RDFNode property) {
         String param;
         List<RDFNode> prop;
-        if (!properties.containsKey(property)) { return ""; }
+        if (!properties.containsKey(property)) {
+            return "";
+        }
         prop = properties.get(property);
         if (RDFS.label.equals(property)) {
             return parseLabel(prop);
@@ -98,45 +131,31 @@ public class Node {
 
     public void parseInputParams() {
         for (Map.Entry<RDFNode, Map<RDFNode, List<RDFNode>>> entry : classesProperties.entrySet()) {
-//            for (Map.Entry<RDFNode, List<RDFNode>> property : entry.getValue().entrySet()) {}
             Map<String, String> map = new HashMap<>();
             map.put(LABEL, getParam(entry.getValue(), RDFS.label));
             map.put(INPUT_TYPE, parseInputType(entry.getValue()));
-            System.out.println("je to objectproperty" +entry.getValue().get(RDF.type).contains(OWL.ObjectProperty) + " cardinalita " +entry.getValue().get(IBD.CARDINALITY) +" klic " + entry.getKey());
             //nevim proc, ale ignorace
-            if (entry.getValue().get(RDFS.range) == null) continue;
-
+            if (entry.getValue().get(RDFS.range) == null) {
+                continue;
+            }
             //object property needs to browse deeper
-            if(entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)){ 
-                //non literal
-                map.put(LITERAL, NO);   
-                if (entry.getValue().get(RDFS.range).get(0).asResource().hasProperty(RDF.type,OWL.Class)){
-                    System.out.println("###############divnej masakr");
-                }
+            if (entry.getValue().get(RDF.type).contains(OWL.ObjectProperty)) {
                 //naseptavani
                 guideObjects.put(entry.getKey(), entry.getValue().get(RDFS.range));
                 //only one to one mapping                owl:NamedIndividual  
-               if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
-                    map.put(MULTIPLE_CARDINALITY, NO);   
-                    System.out.println("\tsingle cardinality " + entry.getValue().get(RDFS.range));
-                    
-                }else{
+                if (entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)) {
+                    map.put(MULTIPLE_CARDINALITY, NO);
+                } else {
                     //can have multiple values
-                    map.put(MULTIPLE_CARDINALITY, YES);   
-                    System.out.println("\tmultiple cardinality " + entry.getValue().get(RDFS.range));
+                    map.put(MULTIPLE_CARDINALITY, YES);
                 }
-            }
-            //datatype property (literal)
-            else if(entry.getValue().get(RDF.type).contains(OWL.DatatypeProperty)) {
-                map.put(LITERAL, YES);         
-                if(entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)){
-                    map.put(MULTIPLE_CARDINALITY, NO);         
-                    System.out.println("\tsingle datatype " + entry.getValue().get(RDFS.range));
-                    
-                }else{      
+            } //datatype property 
+            else if (entry.getValue().get(RDF.type).contains(OWL.DatatypeProperty)) {
+                if (entry.getValue().get(RDF.type).contains(OWL.FunctionalProperty)) {
+                    map.put(MULTIPLE_CARDINALITY, NO);
+                } else {
                     //can have multiple values
-                    map.put(MULTIPLE_CARDINALITY, YES);   
-                    System.out.println("\tmultiple datattype " + entry.getValue().get(RDFS.range));
+                    map.put(MULTIPLE_CARDINALITY, YES);
                 }
             }
             inputParams.put(entry.getKey(), map);
@@ -191,7 +210,6 @@ public class Node {
         this.inputParams = inputParams;
     }
 
-
     public Map<RDFNode, List<RDFNode>> getGuideObjects() {
         return guideObjects;
     }
@@ -207,5 +225,5 @@ public class Node {
     public void setGuideValues(Map<RDFNode, List<String>> guideValues) {
         this.guideValues = guideValues;
     }
-    
+
 }
