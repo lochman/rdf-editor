@@ -19,10 +19,12 @@ var processSave = (event) =>{
 }
 
 var removeInput = (id) =>{
+    $("div[id='div"+id+"']").remove();
+    /*
     element = document.getElementById(id);
     element.type = "hidden";
     element.value = "";
-    $("button[id='btn"+id+"']").hide();
+    $("button[id='btn"+id+"']").hide();*/
     return true;
 }
 

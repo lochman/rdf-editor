@@ -40,7 +40,7 @@ public class RdfController {
     private OntModel ontModel;
     private static Map<String, Node> handledNodes = new HashMap<>();
 //    private static Map<String, String> handledQueries = new HashMap<>();
-    private String rdfFilename = "";
+    private String rdfFilename;
 
     @Autowired
     private RdfService rdfService;
@@ -64,6 +64,7 @@ public class RdfController {
                            @RequestParam("owl-file") MultipartFile ontFile,
                            RedirectAttributes redirectAttributes) {
         try {
+            rdfFilename = "";
             rdfModel = ModelFactory.createDefaultModel();
             rdfService.fileToModel(rdfModel, rdfFile, getFileType(rdfFile));
             rdfFilename = rdfFile.getOriginalFilename();
