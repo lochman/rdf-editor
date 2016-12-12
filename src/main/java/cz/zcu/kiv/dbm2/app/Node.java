@@ -1,6 +1,7 @@
 package cz.zcu.kiv.dbm2.app;
 
 import cz.zcu.mre.vocab.IBD;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -41,6 +42,17 @@ public class Node {
         guideValues = new HashMap<>();
         classesProperties = new HashMap<>();
         inputParams = new HashMap<>();
+    }
+
+    public String getValueNoSuffix(RDFNode node, int index) {
+        String value = "";
+        if (properties.containsKey(node)) {
+            value = properties.get(node).get(index).toString();
+            if (!StringUtils.isBlank(value) && value.lastIndexOf("^^") != -1) {
+                value = value.substring(0, value.lastIndexOf("^^"));
+            }
+        }
+        return value;
     }
 
     private String parseLabel(List<RDFNode> labels) {

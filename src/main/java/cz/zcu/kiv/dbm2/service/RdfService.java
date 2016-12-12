@@ -6,6 +6,7 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -170,12 +171,25 @@ public class RdfService {
         return query.toString();
     }
 
+    private String appendDataType(Node node, Resource resource, String value) {
+        Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties = node.getClassesProperties();
+        Map<RDFNode, List<RDFNode>> properties = classesProperties.get(resource);
+        String property;
+        if (properties.containsKey(RDFS.range) && properties.get(RDFS.range).size() > 0) {
+            property = properties.get(RDFS.range).get(0).toString();
+            if (property.contains("http://www.w3.org/2001/XMLSchema#")) {
+                value += "^^" + property;
+            }
+        }
+        return value;
+    }
+
     public String diffBetweenNodes(Model model, Node node, Map<String, String> inputs) {
         Map<String, String> deleteValues = new HashMap<>();
         Map<String, String> insertValues = new HashMap<>();
         List<RDFNode> previousValues;
         int index, delimPosition;
-        String nodeid;
+        String nodeid, value;
         Resource resource;
         Map<RDFNode, List<RDFNode>> properties = node.getProperties();
         for (Map.Entry<String, String> input : inputs.entrySet()) {
@@ -190,16 +204,17 @@ public class RdfService {
             resource = model.getResource(nodeid);
             if (!properties.containsKey(resource)) {
                 if (StringUtils.isBlank(input.getValue())) { continue; }
-                insertValues.put(nodeid, input.getValue());
+                insertValues.put(nodeid, appendDataType(node, resource, input.getValue()));
 //                System.out.println("insertValues[" + nodeid + "] = " + input.getValue());
             } else {
                 previousValues = properties.get(resource);
 //                System.out.println(previousValues.get(index) + " ?==? " + input.getValue());
-                if (!Objects.equals(previousValues.get(index).toString(), input.getValue())) {
+                value = appendDataType(node, resource, input.getValue());
+                if (StringUtils.isBlank(input.getValue())) {
                     deleteValues.put(nodeid, previousValues.get(index).toString());
-                    insertValues.put(nodeid, input.getValue());
-                } else if (StringUtils.isBlank(input.getValue())) {
+                } else if (!Objects.equals(previousValues.get(index).toString(), value)) {
                     deleteValues.put(nodeid, previousValues.get(index).toString());
+                    insertValues.put(nodeid, value);
                 }
             }
         }

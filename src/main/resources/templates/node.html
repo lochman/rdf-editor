@@ -56,7 +56,7 @@
                         </div>
                         <div th:each="item,i : ${node.properties.get(entry.key)}" th:with="id = ${entry.key + '-' + i.index}" th:id="'div'+${id}" >
                             <div  class="col-sm-11">
-                                <input th:list="${'list' + id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${model.qnameFor(item.toString()) == null} ? ${item} : ${model.qnameFor(item.toString())}" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+                                <input th:list="${'list' + id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${model.qnameFor(item.toString()) == null} ? ${node.getValueNoSuffix(entry.key, i.index)} : ${model.qnameFor(item.toString())}" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
                                 <datalist th:id="${'list' + id}">
                                     <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
                                 </datalist>
@@ -71,7 +71,9 @@
                             <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key.toString()) == null} ? ${entry.key} : ${model.qnameFor(entry.key.toString())}"></span></legend>
                             <div th:with="literal = ${node.YES} == ${entry.value.get(node.LITERAL)}">
                                 <input th:list="'list' + ${id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" 
-                                       th:value="${(node.properties.get(entry.key) == null) || (node.properties.get(entry.key).size() == 0)} ? '' : (${model.qnameFor(node.properties.get(entry.key).get(0).toString()) == null} ? ${node.properties.get(entry.key).get(0)} : ${model.qnameFor(node.properties.get(entry.key).get(0).toString())})" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+                                       th:value="${(node.properties.get(entry.key) == null) || (node.properties.get(entry.key).size() == 0)} ? ''
+                                                : (${model.qnameFor(node.properties.get(entry.key).get(0).toString()) == null} ? ${node.getValueNoSuffix(entry.key, 0)}
+                                                : ${model.qnameFor(node.properties.get(entry.key).get(0).toString())})" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
                                 <datalist th:id="'list' + ${id}">
                                     <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
                                 </datalist>

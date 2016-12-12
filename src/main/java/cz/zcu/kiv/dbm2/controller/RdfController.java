@@ -37,14 +37,29 @@ public class RdfController {
     @Autowired
     private RdfService rdfService;
 
+    private String getFileType(MultipartFile file) {
+        String type, suffix, filename = file.getOriginalFilename();
+        suffix = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
+        System.out.println(suffix);
+        switch (suffix) {
+            case "ttl": { type = "TTL"; break; }
+            case "owl":
+            case "xml": { type = "RDF/XML"; break; }
+            case "nt": { type = "N-TRIPLES"; break; }
+            case "json": { type = "JSON-LD"; break; }
+            default: type = "TTL";
+        }
+        return type;
+    }
+
     @PostMapping("/upload")
     public String loadFile(@RequestParam(value = "rdf-file") MultipartFile rdfFile,
                            @RequestParam("owl-file") MultipartFile ontFile,
                            RedirectAttributes redirectAttributes) {
         try {
-            rdfService.fileToModel(rdfModel, rdfFile, "TTL");
+            rdfService.fileToModel(rdfModel, rdfFile, getFileType(rdfFile));
             if (ontFile != null) {
-                rdfService.fileToModel(ontModel, ontFile, "RDF/XML");
+                rdfService.fileToModel(ontModel, ontFile, getFileType(ontFile));
             }
         } catch (IOException e) {
             System.err.println("Failed to load files");
