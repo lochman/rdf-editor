@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
  * Created by Matej Lochman on 14.11.16.
@@ -96,7 +98,12 @@ public class RdfController {
     @GetMapping(value = "/node", params = "nodeid")
     public String getNodeById(@RequestParam("nodeid") String nodeId, Model model) {
         if (nodeId == null) {
-            model.addAttribute("message", "No ID specified");
+            model.addAttribute("message", "Není specifikované URL uzlu");
+            return "error";
+        }
+        Resource r = ResourceFactory.createResource(nodeId);
+        if (!rdfModel.containsResource(r)){
+            model.addAttribute("message", "Uzel v RDF nenalezen!");
             return "error";
         }
         model.addAttribute("node", createNode(nodeId));
@@ -107,6 +114,11 @@ public class RdfController {
 
     @PostMapping("/node")
     public String getNode(@RequestParam("node-id") String nodeId, Model model) {
+        Resource r = ResourceFactory.createResource(nodeId);
+        if (!rdfModel.containsResource(r)){
+            model.addAttribute("message", "Uzel v RDF nenalezen!");
+            return "error";
+        }
         model.addAttribute("node", createNode(nodeId));
         model.addAttribute("model", rdfModel);
         model.addAttribute("prefixes", rdfModel.getNsPrefixMap());
@@ -136,7 +148,7 @@ public class RdfController {
      @GetMapping("/export/rdf")
     public String getModel(HttpServletResponse response, Model model) throws IOException {
         if (rdfModel.isEmpty()) {
-            model.addAttribute("message", "RDF file is empty");            
+            model.addAttribute("message", "RDF soubor je prázdný");            
             return "error";
         }
         OutputStream outputStream = response.getOutputStream();
