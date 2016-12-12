@@ -24,12 +24,18 @@
                         </div>
                         <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-search"></span>&nbsp; Otevři</button>
                     </form>
-                    <form class="navbar-form navbar-right" th:action="@{/rdf/export}" method="get" enctype="text/plain">
-                        <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat úpravy</button>
-                    </form>
-                    <form class="navbar-form navbar-right" th:action="@{/}" method="get" enctype="text/plain">
-                        <button type="submit" class="btn btn-warning"><span class="glyphicon glyphicon-upload"></span>&nbsp; Nahrát soubory</button>
-                    </form>
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="glyphicon glyphicon-cog"></span>&nbsp; Možnosti<span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a th:href="@{/rdf/export/sparql}"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat SPARQL dotaz</a></li>
+                                <li><a th:href="@{/rdf/export/rdf}"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat RDF soubor</a></li>
+                                <li><a th:href="@{/}"><span class="glyphicon glyphicon-upload"></span>&nbsp; Nahrát soubory</a></li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div><!-- /.container-fluid -->
             </nav>
 

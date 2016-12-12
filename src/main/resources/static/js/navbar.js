@@ -11,7 +11,7 @@ var stopLoader = () =>{
             $(".overlay").hide();
 	}	
 }
-window.onpageshow = (event) => {      
+window.onpageshow = (event) => {   
     //stop initial loader	
     stopLoader();
 };

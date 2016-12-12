@@ -15,10 +15,7 @@ var stopLoader = () =>{
 		$(".overlay").hide();
 	}	
 }
-window.onpageshow = (event) => {     
-    //stop initial loader	
-    stopLoader();
-};
+
 var processFiles = (event) =>{
 	var rdfFile = $("#rdf-file")[0].files[0];
 	var owlFile = $("#owl-file")[0].files[0];

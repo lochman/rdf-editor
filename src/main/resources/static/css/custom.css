@@ -76,11 +76,8 @@ Loader
 .btn-xs{
     margin-top: 5px;
 }
-.navbar-form{
-    padding: 10px 5px;
-}
 .navbar-left{
-    width: calc(100% - 340px);
+    width: calc(100% - 120px);
 }
 .navbar-form .form-group{
     width: calc(100% - 95px);

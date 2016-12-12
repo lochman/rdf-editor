@@ -19,13 +19,20 @@
                             <input type="text" class="form-control"  required="true" id="node-id" name="node-id" placeholder="URL uzlu k editaci"/>
                         </div>
                         <button type="submit" class="btn btn-success"><span class="glyphicon glyphicon-search"></span>&nbsp; Otevři</button>
-                    </form>
-                    <form class="navbar-form navbar-right" th:action="@{/rdf/export}" method="get" enctype="text/plain">
-                        <button type="submit" class="btn btn-info"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat úpravy</button>
-                    </form>
-                    <form class="navbar-form navbar-right" th:action="@{/}" method="get" enctype="text/plain">
-                        <button type="submit" class="btn btn-warning"><span class="glyphicon glyphicon-upload"></span>&nbsp; Nahrát soubory</button>
-                    </form>
+                    </form>                  
+                    
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="glyphicon glyphicon-cog"></span>&nbsp; Možnosti<span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a th:href="@{/rdf/export/sparql}"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat SPARQL dotaz</a></li>
+                                <li><a th:href="@{/rdf/export/rdf}"><span class="glyphicon glyphicon-download"></span>&nbsp; Exportovat RDF soubor</a></li>
+                                <li><a th:href="@{/}"><span class="glyphicon glyphicon-upload"></span>&nbsp; Nahrát soubory</a></li>
+                            </ul>
+                        </li>
+                    </ul>
                 </div><!-- /.container-fluid -->
             </nav>
             <div class="col-sm-12">
@@ -42,14 +49,14 @@
                 <fieldset th:each="entry : ${node.inputParams}">
                     <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.YES}" th:id='par+${entry.key}'>
                         <div class="col-sm-11" >
-                            <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key) == null} ? ${entry.key} : ${model.qnameFor(entry.key)}"></span></legend>
+                            <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key.toString()) == null} ? ${entry.key} : ${model.qnameFor(entry.key.toString())}"></span></legend>
                         </div>
                         <div class="col-sm-1" >
                             <button class="btn btn-xs btn-success" type="button" th:onclick="'addInput(\'' + ${entry.key} + '\',\'' + ${entry.value.get(node.INPUT_TYPE)} + '\', \'' + ${entry.value.get(node.LABEL)} + '\', \'' + ${node.guideValues.get(entry.key)} + '\');'"><span class="glyphicon glyphicon-plus"></span></button>
                         </div>
                         <div th:each="item,i : ${node.properties.get(entry.key)}" th:with="id = ${entry.key + '-' + i.index}" th:id="'div'+${id}" >
                             <div  class="col-sm-11">
-                                <input th:list="${'list' + id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${model.qnameFor(item) == null} ? ${item} : ${model.qnameFor(item)}" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
+                                <input th:list="${'list' + id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" th:value="${model.qnameFor(item.toString()) == null} ? ${item} : ${model.qnameFor(item.toString())}" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
                                 <datalist th:id="${'list' + id}">
                                     <option th:each="value : ${node.guideValues.get(entry.key)}" th:value="${value}"/>
                                 </datalist>
@@ -61,7 +68,7 @@
                     </div>
                     <div th:if="${entry.value.get(node.MULTIPLE_CARDINALITY)} == ${node.NO}" th:with="id=${entry.key + '-0'}">
                         <div  class="col-sm-11">
-                            <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key) == null} ? ${entry.key} : ${model.qnameFor(entry.key)}"></span></legend>
+                            <legend><span th:text="${entry.value.get(node.LABEL)}"  data-toggle="tooltip" th:title="${model.qnameFor(entry.key.toString()) == null} ? ${entry.key} : ${model.qnameFor(entry.key.toString())}"></span></legend>
                             <div th:with="literal = ${node.YES} == ${entry.value.get(node.LITERAL)}">
                                 <input th:list="'list' + ${id}" th:type="${entry.value.get(node.INPUT_TYPE)}" class="form-control" 
                                        th:value="${(node.properties.get(entry.key) == null) || (node.properties.get(entry.key).size() == 0)} ? '' : (${model.qnameFor(node.properties.get(entry.key).get(0).toString()) == null} ? ${node.properties.get(entry.key).get(0)} : ${model.qnameFor(node.properties.get(entry.key).get(0).toString())})" th:id="${id}" th:name="${id}" th:placeholder="${entry.value.get(node.LABEL)}"/>
