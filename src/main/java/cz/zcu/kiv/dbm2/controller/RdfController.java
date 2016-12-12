@@ -34,8 +34,8 @@ import org.apache.jena.rdf.model.ResourceFactory;
 @RequestMapping("/rdf")
 public class RdfController {
 
-    private org.apache.jena.rdf.model.Model rdfModel = ModelFactory.createDefaultModel();
-    private OntModel ontModel = ModelFactory.createOntologyModel();
+    private org.apache.jena.rdf.model.Model rdfModel;
+    private OntModel ontModel;
     private static Map<String, Node> handledNodes = new HashMap<>();
     private String rdfFilename = "";
 
@@ -45,7 +45,6 @@ public class RdfController {
     private String getFileType(MultipartFile file) {
         String type, suffix, filename = file.getOriginalFilename();
         suffix = filename.substring(filename.lastIndexOf(".") + 1, filename.length());
-        System.out.println(suffix);
         switch (suffix) {
             case "ttl": { type = "TTL"; break; }
             case "owl":
@@ -62,9 +61,11 @@ public class RdfController {
                            @RequestParam("owl-file") MultipartFile ontFile,
                            RedirectAttributes redirectAttributes) {
         try {
+            rdfModel = ModelFactory.createDefaultModel()
             rdfService.fileToModel(rdfModel, rdfFile, getFileType(rdfFile));
             rdfFilename = rdfFile.getOriginalFilename();
             if (ontFile != null) {
+                ontModel = ModelFactory.createOntologyModel();
                 rdfService.fileToModel(ontModel, ontFile, getFileType(ontFile));
             }
         } catch (IOException e) {

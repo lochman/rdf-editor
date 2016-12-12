@@ -175,6 +175,7 @@ public class RdfService {
         Map<RDFNode, Map<RDFNode, List<RDFNode>>> classesProperties = node.getClassesProperties();
         Map<RDFNode, List<RDFNode>> properties = classesProperties.get(resource);
         String property;
+        if (StringUtils.isBlank(value)) { return value; }
         if (properties.containsKey(RDFS.range) && properties.get(RDFS.range).size() > 0) {
             property = properties.get(RDFS.range).get(0).toString();
             if (property.contains("http://www.w3.org/2001/XMLSchema#")) {
@@ -188,32 +189,32 @@ public class RdfService {
         Map<String, String> deleteValues = new HashMap<>();
         Map<String, String> insertValues = new HashMap<>();
         List<RDFNode> previousValues;
-        int index, delimPosition;
-        String nodeid, value;
+        int delimPosition;
+        String nodeid, value, lastVal;
         Resource resource;
         Map<RDFNode, List<RDFNode>> properties = node.getProperties();
         for (Map.Entry<String, String> input : inputs.entrySet()) {
             delimPosition = input.getKey().lastIndexOf("-");
             nodeid = input.getKey().substring(0, delimPosition);
-            try {
-                index = Integer.parseInt(input.getKey().substring(delimPosition + 1, input.getKey().length()));
-            } catch (NumberFormatException e) {
-                index = 0;
-            }
-//            System.out.println("index " + index);
             resource = model.getResource(nodeid);
+            value = appendDataType(node, resource, input.getValue());
             if (!properties.containsKey(resource)) {
-                if (StringUtils.isBlank(input.getValue())) { continue; }
-                insertValues.put(nodeid, appendDataType(node, resource, input.getValue()));
-//                System.out.println("insertValues[" + nodeid + "] = " + input.getValue());
+                if (!StringUtils.isBlank(value)) { insertValues.put(nodeid, value); }
             } else {
                 previousValues = properties.get(resource);
-//                System.out.println(previousValues.get(index) + " ?==? " + input.getValue());
-                value = appendDataType(node, resource, input.getValue());
-                if (StringUtils.isBlank(input.getValue())) {
-                    deleteValues.put(nodeid, previousValues.get(index).toString());
-                } else if (!Objects.equals(previousValues.get(index).toString(), value)) {
-                    deleteValues.put(nodeid, previousValues.get(index).toString());
+                lastVal = "";
+                for (RDFNode pvalue : previousValues) {
+                    if (pvalue.toString().equals(value)) {
+                        lastVal = pvalue.toString();
+                        break;
+                    }
+                }
+                if (StringUtils.isBlank(lastVal)) {
+                    if (!StringUtils.isBlank(value)) { insertValues.put(nodeid, value); }
+                } else if (StringUtils.isBlank(value)) {
+                    deleteValues.put(nodeid, lastVal);
+                } else if (!Objects.equals(lastVal, value)) {
+                    deleteValues.put(nodeid, lastVal);
                     insertValues.put(nodeid, value);
                 }
             }
