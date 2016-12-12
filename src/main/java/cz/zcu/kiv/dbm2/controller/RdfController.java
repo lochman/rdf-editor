@@ -74,8 +74,12 @@ public class RdfController {
         return node;
     }
 
-    @GetMapping("/node/{nodeid}")
-    public String selectNodebyId(@PathVariable("nodeid") String nodeId, Model model) {
+    @GetMapping(value = "/node", params = "nodeid")
+    public String getNodeById(@RequestParam("nodeid") String nodeId, Model model) {
+        if (nodeId == null) {
+            model.addAttribute("message", "No ID specified");
+            return "error";
+        }
         model.addAttribute("node", createNode(nodeId));
         model.addAttribute("model", rdfModel);
         model.addAttribute("prefixes", rdfModel.getNsPrefixMap());
@@ -83,7 +87,7 @@ public class RdfController {
     }
 
     @PostMapping("/node")
-    public String selectNode(@RequestParam("node-id") String nodeId, Model model) {
+    public String getNode(@RequestParam("node-id") String nodeId, Model model) {
         model.addAttribute("node", createNode(nodeId));
         model.addAttribute("model", rdfModel);
         model.addAttribute("prefixes", rdfModel.getNsPrefixMap());
@@ -101,7 +105,7 @@ public class RdfController {
         return "error";
     }
 
-    @GetMapping("/model")
+    @GetMapping("/export/rdf")
     @ResponseBody
     public byte[] getModel() {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
